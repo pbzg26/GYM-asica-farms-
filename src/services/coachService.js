@@ -1,13 +1,10 @@
 // ============================================================
-// SERVICIO COACH IA — Mango Coach
-// ● Solo usuarios autenticados pueden usarlo
-// ● Filtro de tema ANTES de llamar la API (ahorra tokens)
-// ● System prompt compacto (~80 tokens)
-// ● max_tokens limitado a 350
-// ● Fácil de cambiar la API key: solo edita VITE_ANTHROPIC_KEY en .env
+// COACH IA — Mango Coach
+// Usa la API de Anthropic directamente desde el cliente
+// Solo usuarios autenticados pueden usarlo
+// Filtro de tema + max_tokens limitado para optimizar costo
 // ============================================================
 
-// ── Palabras clave permitidas ─────────────────────────────────
 const TEMAS_GYM = [
   'ejercicio','rutina','músculo','musculo','proteína','proteina',
   'sentadilla','lagartija','flexión','flexion','burpee','peso',
@@ -18,7 +15,8 @@ const TEMAS_GYM = [
   'nutrición','nutricion','hidratación','hidratacion','agua',
   'glúteo','gluteo','abdomen','core','fuerza','masa','grasa',
   'hiperextensión','hiperextension','press','remo','rack','step',
-  'calorías','calorias','recuperación','recuperacion','proteína'
+  'calorías','calorias','recuperación','recuperacion','proteína',
+  'calentamiento','estiramiento','dolor','lesión','postura'
 ]
 
 export function esPreguntaValida(mensaje) {
@@ -26,9 +24,7 @@ export function esPreguntaValida(mensaje) {
   return TEMAS_GYM.some(t => lower.includes(t))
 }
 
-// ── Construir system prompt con datos del perfil ──────────────
 function buildSystemPrompt(perfil) {
-  // Datos del usuario para personalizar respuestas
   const datosUsuario = perfil ? `
 Usuario: ${perfil.nombre}, Grupo ${perfil.grupo}.
 ${perfil.peso ? `Peso: ${perfil.peso}kg.` : ''}
@@ -39,9 +35,7 @@ ${perfil.meta ? `Meta: ${perfil.meta}.` : ''}` : ''
 Equipo disponible: rack de potencia, banco ajustable, press de banca, hiperextensiones, máquina de remo, mancuernas, barra olímpica, step. También calistenia libre.`
 }
 
-// ── Llamada principal al Coach ────────────────────────────────
 export async function preguntarCoach({ mensaje, perfil, historialChat = [] }) {
-  // 1. Filtro de tema — sin costo si no pasa el filtro
   if (!esPreguntaValida(mensaje)) {
     return {
       ok: false,
@@ -49,32 +43,25 @@ export async function preguntarCoach({ mensaje, perfil, historialChat = [] }) {
     }
   }
 
-  // 2. Construir historial de conversación (máx últimos 6 mensajes para no acumular tokens)
   const mensajesRecientes = historialChat.slice(-6).map(m => ({
-    role:    m.role,
+    role: m.role,
     content: m.content
   }))
 
-  // 3. Llamada a Claude API
-  // La API key se configura en .env como VITE_ANTHROPIC_KEY
-  // Para cambiar a la cuenta de Asica Farms, solo se cambia esa variable
   const apiKey = import.meta.env.VITE_ANTHROPIC_KEY
-  const url = import.meta.env.DEV
-    ? '/api/claude'
-    : 'https://api.anthropic.com/v1/messages'
 
-  const response = await fetch(url, {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'Content-Type':      'application/json',
-      'x-api-key':         apiKey,
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model:      'claude-haiku-4-5-20251001', // Haiku: más barato, suficiente para Q&A
-      max_tokens: 350,                          // Límite de respuesta
-      system:     buildSystemPrompt(perfil),
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 350,
+      system: buildSystemPrompt(perfil),
       messages: [
         ...mensajesRecientes,
         { role: 'user', content: mensaje }
@@ -88,7 +75,7 @@ export async function preguntarCoach({ mensaje, perfil, historialChat = [] }) {
 
   const data = await response.json()
   return {
-    ok:        true,
+    ok: true,
     respuesta: data.content?.[0]?.text ?? 'No pude generar una respuesta, intenta de nuevo.'
   }
 }

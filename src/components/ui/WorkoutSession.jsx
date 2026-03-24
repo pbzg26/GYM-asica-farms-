@@ -1,10 +1,5 @@
-// ============================================================
-// COMPONENTE: WorkoutSession
-// Modo "Comenzar rutina" con temporizador por serie y descanso
-// ============================================================
 import { useState, useEffect, useRef } from 'react'
 
-// Parsear campo descanso: "60 seg" → 60, "2 min" → 120
 function parsearDescanso(str) {
   if (!str) return 75
   const s = String(str).toLowerCase().trim()
@@ -44,48 +39,54 @@ function beep() {
   } catch(_) {}
 }
 
-// Círculo SVG para countdown
-function CirculoContdown({ segundos, total }) {
+// Estima calorías quemadas (METs aproximados por tipo de ejercicio)
+function estimarCalorias(tiemposPorEj, pesoUsuario = 70) {
+  const MET_PROMEDIO = 5 // MET promedio gym moderado
+  let totalSeg = 0
+  tiemposPorEj.forEach(ej => {
+    ej.series.forEach(s => { totalSeg += s.duracionSeg ?? 0 })
+  })
+  const horas = totalSeg / 3600
+  return Math.round(MET_PROMEDIO * pesoUsuario * horas)
+}
+
+function CirculoCountdown({ segundos, total }) {
   const r = 70
   const circ = 2 * Math.PI * r
   const progreso = total > 0 ? (segundos / total) : 0
   const offset = circ * (1 - progreso)
   return (
-    <svg width="180" height="180" style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx="90" cy="90" r={r} fill="none" stroke="var(--green-100, #e8f5e9)" strokeWidth="10" />
-      <circle
-        cx="90" cy="90" r={r} fill="none"
-        stroke="var(--green-600, #43a047)" strokeWidth="10"
-        strokeDasharray={circ}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        style={{ transition: 'stroke-dashoffset 1s linear' }}
-      />
+    <svg width="180" height="180" style={{transform:'rotate(-90deg)'}}>
+      <circle cx="90" cy="90" r={r} fill="none" stroke="var(--bd2)" strokeWidth="10"/>
+      <circle cx="90" cy="90" r={r} fill="none" stroke="var(--g500)" strokeWidth="10"
+        strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+        style={{transition:'stroke-dashoffset 1s linear'}}/>
     </svg>
   )
 }
 
-export default function WorkoutSession({ ejercicios, grupoNombre, diaNombre, onFinalizar, onSalir }) {
-  const [fase,            setFase]            = useState('preparacion')
-  const [ejercicioIdx,    setEjercicioIdx]    = useState(0)
-  const [serieActual,     setSerieActual]     = useState(1)
-  const [cronometro,      setCronometro]      = useState(0)  // sube
-  const [countdown,       setCountdown]       = useState(0)  // baja
-  const [countdownTotal,  setCountdownTotal]  = useState(0)
-  const [tiempoSesion,    setTiempoSesion]    = useState(0)  // total sesión
-  const [tiemposPorEj,    setTiemposPorEj]    = useState([]) // acumulado
-  const [seriesEj,        setSeriesEj]        = useState([]) // series del ej actual
-  const [modalSalir,      setModalSalir]      = useState(false)
-  const [sesionIniciada,  setSesionIniciada]  = useState(false)
+export default function WorkoutSession({ ejercicios, grupoNombre, diaNombre, onFinalizar, onSalir, pesoUsuario = 70 }) {
+  const [fase,           setFase]           = useState('preparacion')
+  const [ejercicioIdx,   setEjercicioIdx]   = useState(0)
+  const [serieActual,    setSerieActual]     = useState(1)
+  const [cronometro,     setCronometro]      = useState(0)
+  const [countdown,      setCountdown]       = useState(0)
+  const [countdownTotal, setCountdownTotal]  = useState(0)
+  const [tiempoSesion,   setTiempoSesion]   = useState(0)
+  const [tiemposPorEj,   setTiemposPorEj]   = useState([])
+  const [seriesEj,       setSeriesEj]        = useState([])
+  const [modalSalir,     setModalSalir]      = useState(false)
+  const [sesionIniciada, setSesionIniciada]  = useState(false)
+  // NUEVO: peso ingresado por serie
+  const [pesoSerie,      setPesoSerie]       = useState('')
 
-  const intervaloRef    = useRef(null)
-  const contdownRef     = useRef(null)
-  const sesionRef       = useRef(null)
+  const intervaloRef  = useRef(null)
+  const countdownRef  = useRef(null)
+  const sesionRef     = useRef(null)
 
-  const ejActual = ejercicios[ejercicioIdx] ?? {}
+  const ejActual    = ejercicios[ejercicioIdx] ?? {}
   const totalSeries = parseInt(String(ejActual.s ?? '3').split('x')[0]) || 3
 
-  // Cronómetro de serie (sube)
   useEffect(() => {
     if (fase === 'en_serie') {
       intervaloRef.current = setInterval(() => setCronometro(c => c + 1), 1000)
@@ -95,17 +96,16 @@ export default function WorkoutSession({ ejercicios, grupoNombre, diaNombre, onF
     return () => clearInterval(intervaloRef.current)
   }, [fase])
 
-  // Countdown de descanso (baja)
   useEffect(() => {
     if (fase === 'descanso') {
-      contdownRef.current = setInterval(() => {
+      countdownRef.current = setInterval(() => {
         setCountdown(c => {
           if (c <= 1) {
-            clearInterval(contdownRef.current)
+            clearInterval(countdownRef.current)
             beep()
-            // Avanzar a siguiente serie
             setSerieActual(s => s + 1)
             setCronometro(0)
+            setPesoSerie('')
             setFase('en_serie')
             return 0
           }
@@ -113,243 +113,274 @@ export default function WorkoutSession({ ejercicios, grupoNombre, diaNombre, onF
         })
       }, 1000)
     } else {
-      clearInterval(contdownRef.current)
+      clearInterval(countdownRef.current)
     }
-    return () => clearInterval(contdownRef.current)
+    return () => clearInterval(countdownRef.current)
   }, [fase])
 
-  // Cronómetro total de sesión (sube siempre desde primera serie)
   useEffect(() => {
-    if (sesionIniciada && fase !== 'preparacion' && fase !== 'rutina_completada') {
+    if (sesionIniciada) {
       sesionRef.current = setInterval(() => setTiempoSesion(t => t + 1), 1000)
-    } else {
-      clearInterval(sesionRef.current)
     }
     return () => clearInterval(sesionRef.current)
-  }, [sesionIniciada, fase])
+  }, [sesionIniciada])
+
+  const progreso = ((ejercicioIdx / ejercicios.length) + (serieActual - 1) / (ejercicios.length * totalSeries)) * 100
 
   function iniciarSerie() {
     if (!sesionIniciada) setSesionIniciada(true)
     setCronometro(0)
+    setPesoSerie('')
     setFase('en_serie')
   }
 
   function completarSerie() {
-    const tiempoSerie = cronometro
-    const nuevasSeries = [...seriesEj, { duracionSeg: tiempoSerie }]
+    const duracion = cronometro
+    // Guardar la serie con peso
+    const nuevasSeries = [...seriesEj, { serieNum: serieActual, duracionSeg: duracion, pesoKg: pesoSerie ? parseFloat(pesoSerie) : null }]
     setSeriesEj(nuevasSeries)
+    clearInterval(intervaloRef.current)
 
     if (serieActual >= totalSeries) {
-      // Última serie del ejercicio
-      const tiempoTotalEj = nuevasSeries.reduce((a, s) => a + s.duracionSeg, 0)
-      setTiemposPorEj(prev => [
-        ...prev,
-        {
-          nombre: ejActual.n ?? ejActual.nombre,
-          series: nuevasSeries,
-          tiempoTotalSeg: tiempoTotalEj
-        }
-      ])
-      setFase('ejercicio_completado')
+      // Todas las series del ejercicio completadas
+      const totalEj = nuevasSeries.reduce((a, s) => a + s.duracionSeg, 0)
+      const nuevosPorEj = [...tiemposPorEj, { nombre: ejActual.n ?? ejActual.nombre ?? `Ejercicio ${ejercicioIdx + 1}`, series: nuevasSeries, tiempoTotalSeg: totalEj }]
+      setTiemposPorEj(nuevosPorEj)
+      setSeriesEj([])
+
+      if (ejercicioIdx + 1 >= ejercicios.length) {
+        setFase('rutina_completada')
+      } else {
+        setFase('ejercicio_completado')
+      }
     } else {
-      // Más series → descanso
-      const secs = parsearDescanso(ejActual.descanso)
-      setCountdown(secs)
-      setCountdownTotal(secs)
+      const descanso = parsearDescanso(ejActual.descanso)
+      setCountdown(descanso)
+      setCountdownTotal(descanso)
       setFase('descanso')
     }
-  }
-
-  function saltarDescanso() {
-    clearInterval(contdownRef.current)
-    setSerieActual(s => s + 1)
-    setCronometro(0)
-    setFase('en_serie')
   }
 
   function siguienteEjercicio() {
     setEjercicioIdx(i => i + 1)
     setSerieActual(1)
-    setSeriesEj([])
     setCronometro(0)
+    setPesoSerie('')
     setFase('preparacion')
   }
 
-  function verResumenFinal() {
-    clearInterval(sesionRef.current)
-    setFase('rutina_completada')
-  }
-
   function guardarYSalir() {
-    const tiempoTotalMinutos = Math.round(tiempoSesion / 60)
-    onFinalizar({ tiempoTotalSeg: tiempoSesion, tiempoTotalMinutos, tiemposPorEjercicio: tiemposPorEj })
+    const calorias = estimarCalorias(tiemposPorEj, pesoUsuario)
+    onFinalizar({
+      tiempoTotalSeg:      tiempoSesion,
+      tiempoTotalMinutos:  Math.round(tiempoSesion / 60),
+      tiemposPorEjercicio: tiemposPorEj,
+      caloriasEstimadas:   calorias
+    })
   }
 
-  // ── PANTALLA: preparacion ────────────────────────────────────
-  if (fase === 'preparacion') {
-    const ejNum = ejercicioIdx + 1
-    const ejTotal = ejercicios.length
+  const calorias = estimarCalorias(tiemposPorEj, pesoUsuario)
+
+  // ── MODAL SALIR ──────────────────────────────────────────────
+  if (modalSalir) {
     return (
-      <div className="workout-session">
-        <div className="workout-session__topbar">
-          <button className="btn btn--ghost btn--sm" onClick={() => setModalSalir(true)}>← Salir</button>
-          <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>{diaNombre} · {grupoNombre}</span>
-          <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>{formatMM_SS(tiempoSesion)}</span>
-        </div>
-
-        <div className="workout-fase workout-fase--prep">
-          <p className="workout-ej-counter">Ejercicio {ejNum} de {ejTotal}</p>
-          <h2 className="workout-ej-nombre">{ejActual.n ?? ejActual.nombre}</h2>
-          <p className="workout-ej-sub">{ejActual.s} · {totalSeries} series</p>
-          {ejActual.descripcion && (
-            <p className="workout-ej-desc">{ejActual.descripcion}</p>
-          )}
-          {ejActual.advertencia && (
-            <div className="workout-advertencia">
-              ⚠️ {ejActual.advertencia}
-            </div>
-          )}
-          <button className="btn btn--primary btn--xl" onClick={iniciarSerie}>
-            ▶ Iniciar serie 1
-          </button>
-        </div>
-
-        {modalSalir && <ModalSalir onContinuar={() => setModalSalir(false)} onSalir={onSalir} />}
-      </div>
-    )
-  }
-
-  // ── PANTALLA: en_serie ───────────────────────────────────────
-  if (fase === 'en_serie') {
-    return (
-      <div className="workout-session">
-        <div className="workout-session__topbar">
-          <button className="btn btn--ghost btn--sm" onClick={() => setModalSalir(true)}>← Salir</button>
-          <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>{diaNombre}</span>
-          <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>Total: {formatMM_SS(tiempoSesion)}</span>
-        </div>
-        <div className="workout-fase workout-fase--serie">
-          <div className="workout-cronometro">{formatMM_SS(cronometro)}</div>
-          <p className="workout-serie-label">Serie {serieActual} de {totalSeries} · en curso</p>
-          <p className="workout-ej-nombre">{ejActual.n ?? ejActual.nombre}</p>
-          <button className="btn btn--success btn--xl" onClick={completarSerie}>
-            ✓ Serie completada
-          </button>
-        </div>
-        {modalSalir && <ModalSalir onContinuar={() => setModalSalir(false)} onSalir={onSalir} />}
-      </div>
-    )
-  }
-
-  // ── PANTALLA: descanso ───────────────────────────────────────
-  if (fase === 'descanso') {
-    return (
-      <div className="workout-session">
-        <div className="workout-session__topbar">
-          <button className="btn btn--ghost btn--sm" onClick={() => setModalSalir(true)}>← Salir</button>
-          <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>{diaNombre}</span>
-          <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>Total: {formatMM_SS(tiempoSesion)}</span>
-        </div>
-        <div className="workout-fase workout-fase--descanso">
-          <p className="workout-descanso-label">Descansa · próxima serie en {countdown}s</p>
-          <div className="workout-countdown-wrap">
-            <CirculoContdown segundos={countdown} total={countdownTotal} />
-            <div className="workout-countdown-num">{countdown}</div>
+      <div className="workout-overlay" style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'24px'}}>
+        <div style={{background:'var(--surface)',borderRadius:'var(--r20)',padding:'32px 28px',maxWidth:340,width:'100%',textAlign:'center',boxShadow:'var(--sh4)'}}>
+          <div style={{fontSize:48,marginBottom:14}}>⚠️</div>
+          <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>¿Salir de la rutina?</h3>
+          <p style={{color:'var(--t500)',fontSize:14,marginBottom:24,lineHeight:1.6}}>Perderás el progreso de esta sesión si sales ahora.</p>
+          <div style={{display:'flex',gap:10}}>
+            <button className="btn btn--ghost btn--full" onClick={() => setModalSalir(false)}>Continuar</button>
+            <button className="btn btn--danger btn--full" onClick={onSalir}>Sí, salir</button>
           </div>
-          <p className="workout-ej-nombre">{ejActual.n ?? ejActual.nombre}</p>
-          <p className="workout-serie-label">Serie {serieActual + 1} de {totalSeries}</p>
-          <button className="btn btn--ghost btn--sm" onClick={saltarDescanso}>Saltar descanso</button>
         </div>
-        {modalSalir && <ModalSalir onContinuar={() => setModalSalir(false)} onSalir={onSalir} />}
       </div>
     )
   }
 
-  // ── PANTALLA: ejercicio_completado ───────────────────────────
-  if (fase === 'ejercicio_completado') {
-    const ejData = tiemposPorEj[tiemposPorEj.length - 1]
-    const hayMas = ejercicioIdx < ejercicios.length - 1
-    return (
-      <div className="workout-session">
-        <div className="workout-session__topbar">
-          <button className="btn btn--ghost btn--sm" onClick={() => setModalSalir(true)}>← Salir</button>
-          <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>{diaNombre}</span>
-          <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>Total: {formatMM_SS(tiempoSesion)}</span>
-        </div>
-        <div className="workout-fase workout-fase--completado">
-          <div className="workout-check-icon">✓</div>
-          <h3 className="workout-ej-nombre">{ejData?.nombre}</h3>
-          <p className="workout-ej-sub">Tiempo: {formatMM_SS(ejData?.tiempoTotalSeg ?? 0)}</p>
-          {ejData?.series && (
-            <table className="workout-series-tabla">
-              <thead><tr><th>Serie</th><th>Tiempo</th></tr></thead>
-              <tbody>
-                {ejData.series.map((s, i) => (
-                  <tr key={i}><td>Serie {i + 1}</td><td>{formatMM_SS(s.duracionSeg)}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {hayMas ? (
-            <button className="btn btn--primary btn--xl" onClick={siguienteEjercicio}>
-              → Siguiente ejercicio
-            </button>
-          ) : (
-            <button className="btn btn--success btn--xl" onClick={verResumenFinal}>
-              🏆 Ver resumen final
-            </button>
-          )}
-        </div>
-        {modalSalir && <ModalSalir onContinuar={() => setModalSalir(false)} onSalir={onSalir} />}
-      </div>
-    )
-  }
-
-  // ── PANTALLA: rutina_completada ──────────────────────────────
+  // ── RUTINA COMPLETADA ────────────────────────────────────────
   if (fase === 'rutina_completada') {
     return (
-      <div className="workout-session">
-        <div className="workout-fase workout-fase--final">
-          <div className="workout-flotando">
-            <span>🥭</span><span>🥑</span><span>🍇</span>
-          </div>
-          <h2 className="workout-final-titulo">¡Rutina completada!</h2>
-          <p className="workout-final-tiempo">{formatHH_MM_SS(tiempoSesion)}</p>
-          <table className="workout-series-tabla">
-            <thead>
-              <tr><th>Ejercicio</th><th>Series</th><th>Tiempo</th></tr>
-            </thead>
-            <tbody>
-              {tiemposPorEj.map((t, i) => (
-                <tr key={i}>
-                  <td>{t.nombre}</td>
-                  <td>{t.series.length}</td>
-                  <td>{formatMM_SS(t.tiempoTotalSeg)}</td>
+      <div className="workout-overlay">
+        <div className="workout-body animate-fade">
+          <div className="workout-summary">
+            <div className="workout-summary__emoji">🏆</div>
+            <h2>¡Rutina completada!</h2>
+            <p style={{color:'var(--t500)',marginBottom:16}}>{grupoNombre} · {diaNombre}</p>
+            <div className="workout-summary__time">{formatHH_MM_SS(tiempoSesion)}</div>
+            <div style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap',marginBottom:20}}>
+              <span className="tag tag--primary">✓ {tiemposPorEj.length} ejercicios</span>
+              <span className="calorias-badge">🔥 ~{calorias} kcal estimadas</span>
+            </div>
+
+            <table className="workout-summary-table">
+              <thead>
+                <tr>
+                  <th>Ejercicio</th>
+                  <th>Series</th>
+                  <th>Tiempo</th>
+                  <th>Peso máx</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <button className="btn btn--primary btn--xl" onClick={guardarYSalir}>
-            Guardar y salir
-          </button>
+              </thead>
+              <tbody>
+                {tiemposPorEj.map((ej, i) => {
+                  const pesoMax = Math.max(...ej.series.map(s => s.pesoKg ?? 0))
+                  return (
+                    <tr key={i}>
+                      <td>{ej.nombre}</td>
+                      <td>{ej.series.length}</td>
+                      <td>{formatMM_SS(ej.tiempoTotalSeg)}</td>
+                      <td style={{color:'var(--g600)',fontWeight:700}}>{pesoMax > 0 ? `${pesoMax} kg` : '—'}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+
+            <button className="btn btn--primary btn--full btn--lg" onClick={guardarYSalir}>
+              Guardar y salir
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
-  return null
-}
+  // ── EJERCICIO COMPLETADO ─────────────────────────────────────
+  if (fase === 'ejercicio_completado') {
+    const ultimo = tiemposPorEj[tiemposPorEj.length - 1]
+    return (
+      <div className="workout-overlay">
+        <div className="workout-body animate-fade">
+          <div className="workout-phase" style={{paddingTop:40}}>
+            <div style={{fontSize:64,marginBottom:14}}>✅</div>
+            <p className="workout-phase__label">Ejercicio completado</p>
+            <h2 className="workout-phase__name">{ultimo?.nombre}</h2>
+            <div className="workout-timer workout-timer--complete">{formatMM_SS(ultimo?.tiempoTotalSeg ?? 0)}</div>
 
-function ModalSalir({ onContinuar, onSalir }) {
-  return (
-    <div className="workout-modal-overlay">
-      <div className="workout-modal">
-        <h3>¿Seguro que quieres salir?</h3>
-        <p>Perderás el progreso de esta sesión.</p>
-        <div className="workout-modal__actions">
-          <button className="btn btn--primary" onClick={onContinuar}>Continuar entrenando</button>
-          <button className="btn btn--danger" onClick={onSalir}>Sí, salir</button>
+            <div className="workout-series-log">
+              <h4>Detalle de series</h4>
+              {ultimo?.series.map((s, i) => (
+                <div key={i} className="workout-series-row">
+                  <span>Serie {s.serieNum}</span>
+                  <span>{s.pesoKg ? `${s.pesoKg} kg` : 'Sin peso'}</span>
+                  <span>{formatMM_SS(s.duracionSeg)}</span>
+                </div>
+              ))}
+            </div>
+
+            <button className="btn btn--primary btn--full btn--lg" onClick={siguienteEjercicio}>
+              → Siguiente: {ejercicios[ejercicioIdx + 1]?.n ?? ejercicios[ejercicioIdx + 1]?.nombre}
+            </button>
+          </div>
         </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="workout-overlay">
+      {/* Header */}
+      <div className="workout-header">
+        <button className="btn btn--ghost btn--sm" onClick={() => setModalSalir(true)}>← Salir</button>
+        <h2>{diaNombre} · {grupoNombre}</h2>
+        <span style={{fontSize:13,color:'var(--t500)',flexShrink:0}}>{ejercicioIdx + 1}/{ejercicios.length}</span>
+      </div>
+
+      {/* Barra de progreso */}
+      <div className="workout-progress">
+        <div className="workout-progress-fill" style={{width:`${progreso}%`}} />
+      </div>
+
+      <div className="workout-body">
+        {/* ── PREPARACIÓN ── */}
+        {fase === 'preparacion' && (
+          <div className="workout-phase animate-fade">
+            <p className="workout-phase__label">Ejercicio {ejercicioIdx + 1} de {ejercicios.length}</p>
+            <h2 className="workout-phase__name">{ejActual.n ?? ejActual.nombre}</h2>
+            <p className="workout-phase__series">{ejActual.s} · {totalSeries} series</p>
+
+            {ejActual.descripcion && (
+              <div className="workout-desc">{ejActual.descripcion}</div>
+            )}
+            {ejActual.advertencia && (
+              <div className="workout-warning">⚠️ {ejActual.advertencia}</div>
+            )}
+
+            <button className="btn btn--primary btn--full btn--lg" onClick={iniciarSerie}>
+              ▶ Iniciar serie 1
+            </button>
+          </div>
+        )}
+
+        {/* ── EN SERIE ── */}
+        {fase === 'en_serie' && (
+          <div className="workout-phase animate-fade">
+            <p className="workout-phase__label">Serie {serieActual} de {totalSeries} · En curso</p>
+            <h2 className="workout-phase__name">{ejActual.n ?? ejActual.nombre}</h2>
+            <div className="workout-timer">{formatMM_SS(cronometro)}</div>
+
+            {/* INPUT PESO */}
+            <div className="serie-peso-input">
+              <label>¿Cuánto peso usas?</label>
+              <input
+                type="number"
+                step="0.5"
+                min="0"
+                placeholder="0"
+                value={pesoSerie}
+                onChange={e => setPesoSerie(e.target.value)}
+              />
+              <span>kg</span>
+            </div>
+
+            <button className="btn btn--primary btn--full btn--lg" onClick={completarSerie}>
+              ✓ Serie {serieActual} completada
+            </button>
+          </div>
+        )}
+
+        {/* ── DESCANSO ── */}
+        {fase === 'descanso' && (
+          <div className="workout-phase animate-fade">
+            <p className="workout-phase__label">Descansando · próxima serie en</p>
+            <h2 className="workout-phase__name" style={{marginBottom:16}}>{ejActual.n ?? ejActual.nombre}</h2>
+            <p style={{color:'var(--t500)',marginBottom:16,fontSize:14}}>Serie {serieActual + 1} de {totalSeries}</p>
+
+            <div className="workout-countdown-wrap">
+              <CirculoCountdown segundos={countdown} total={countdownTotal} />
+              <div className="workout-countdown-num">{countdown}</div>
+            </div>
+
+            <button
+              className="btn btn--ghost btn--sm"
+              onClick={() => {
+                clearInterval(countdownRef.current)
+                setSerieActual(s => s + 1)
+                setCronometro(0)
+                setPesoSerie('')
+                setFase('en_serie')
+              }}
+              style={{marginTop:16}}
+            >
+              Saltar descanso →
+            </button>
+
+            {/* Series anteriores */}
+            {seriesEj.length > 0 && (
+              <div className="workout-series-log" style={{marginTop:20}}>
+                <h4>Series completadas</h4>
+                {seriesEj.map((s, i) => (
+                  <div key={i} className="workout-series-row">
+                    <span>Serie {s.serieNum}</span>
+                    <span>{s.pesoKg ? `${s.pesoKg} kg` : 'Sin peso'}</span>
+                    <span>{formatMM_SS(s.duracionSeg)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

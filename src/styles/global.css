@@ -874,3 +874,145 @@ input,select,textarea{font-family:var(--font);}
   .machines-grid{grid-template-columns:repeat(4,1fr);}
 }
 .bottom-nav{display:none!important;}
+
+/* ── PROFILE TABS ───────────────────────────────────────────── */
+.profile-tabs{
+  display:flex;gap:0;margin-bottom:28px;
+  background:var(--surface2);border-radius:var(--r12);
+  padding:4px;border:1px solid var(--bd);
+}
+.profile-tab{
+  flex:1;padding:9px 14px;border-radius:var(--r8);
+  background:transparent;border:none;
+  font-size:13px;font-weight:700;color:var(--t500);
+  cursor:pointer;transition:all .16s;text-align:center;
+}
+.profile-tab:hover:not(.active){color:var(--t200);background:rgba(0,0,0,.03);}
+.profile-tab.active{
+  background:var(--surface);color:var(--g700);
+  box-shadow:var(--sh1);
+}
+
+/* ── PHOTO UPLOAD ───────────────────────────────────────────── */
+.avatar-upload{position:relative;display:inline-block;cursor:pointer;}
+.avatar-upload__overlay{
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(0,0,0,.42);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .18s;font-size:20px;
+}
+.avatar-upload:hover .avatar-upload__overlay{opacity:1;}
+.avatar-upload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border-radius:50%;}
+.profile-avatar-img{
+  width:80px;height:80px;border-radius:50%;
+  object-fit:cover;border:3px solid var(--g300);
+  box-shadow:var(--sh2);
+}
+.profile-avatar-placeholder{
+  width:80px;height:80px;border-radius:50%;
+  background:var(--g100);border:3px solid var(--g300);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;font-weight:800;color:var(--g700);
+}
+
+/* ── IMC BAR ────────────────────────────────────────────────── */
+.imc-bar-wrap{
+  position:relative;margin:16px 0 24px;
+}
+.imc-bar-track{
+  height:12px;border-radius:var(--rf);
+  background:linear-gradient(90deg,
+    #ef5350 0%, #ef5350 18.5%,
+    #66bb6a 18.5%, #66bb6a 56%,
+    #ffa726 56%, #ffa726 76%,
+    #ef5350 76%, #ef5350 100%
+  );
+  position:relative;overflow:visible;
+}
+.imc-bar-indicator{
+  position:absolute;top:-4px;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--surface);border:3px solid var(--t100);
+  box-shadow:var(--sh2);
+  transform:translateX(-50%);
+  transition:left .5s ease;
+  z-index:2;
+}
+.imc-bar-labels{
+  display:flex;justify-content:space-between;
+  margin-top:6px;font-size:10px;color:var(--t500);font-weight:600;
+}
+.imc-valor-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 16px;border-radius:var(--rf);
+  font-size:15px;font-weight:800;margin-bottom:10px;
+  border:2px solid currentColor;
+}
+
+/* ── GRÁFICAS ───────────────────────────────────────────────── */
+.grafica-card{
+  background:var(--surface);border:1px solid var(--bd);
+  border-radius:var(--r16);padding:20px;margin-bottom:14px;
+  box-shadow:var(--sh1);
+}
+.grafica-card__titulo{font-size:15px;font-weight:800;color:var(--t100);margin-bottom:3px;}
+.grafica-card__desc{font-size:12px;color:var(--t500);margin-bottom:16px;}
+.grafica-card__empty{
+  background:var(--surface2);border:2px dashed var(--bd2);
+  border-radius:var(--r12);padding:28px;text-align:center;
+  color:var(--t500);font-size:13px;
+}
+.grafica-card__empty-icon{font-size:32px;margin-bottom:10px;}
+.grafica-card__empty-hint{font-size:11.5px;color:var(--t600);margin-top:6px;}
+.grafica-trend{
+  display:inline-block;margin-top:10px;
+  font-size:12px;font-weight:700;padding:4px 12px;border-radius:var(--rf);
+}
+.grafica-trend--green{background:var(--g100);color:var(--g700);}
+.grafica-trend--yellow{background:var(--warn-bg);color:var(--warn);}
+
+/* Heatmap */
+.heatmap-wrap{overflow-x:auto;}
+.heatmap-dias-labels{
+  display:grid;grid-template-columns:repeat(7,14px);
+  gap:3px;margin-bottom:4px;
+}
+.heatmap-dias-labels span{font-size:9px;color:var(--t600);font-weight:700;text-align:center;}
+.heatmap-grid{display:grid;grid-template-columns:repeat(7,14px);gap:3px;}
+.heatmap-cell{width:14px;height:14px;border-radius:3px;background:var(--bd);}
+.heatmap-cell--activo{background:var(--g400);}
+.heatmap-cell--domingo{background:var(--surface2);border:1px solid var(--bd);}
+
+/* ── WORKOUT — PESO POR SERIE ───────────────────────────────── */
+.serie-peso-input{
+  display:flex;align-items:center;gap:10px;
+  background:var(--g50);border:1.5px solid var(--bd2);
+  border-radius:var(--r12);padding:10px 14px;margin-bottom:8px;
+}
+.serie-peso-input label{font-size:12px;font-weight:700;color:var(--t400);white-space:nowrap;}
+.serie-peso-input input{
+  width:90px;background:#fff;border:1.5px solid var(--bd2);
+  border-radius:var(--r8);padding:7px 10px;
+  font-size:14px;font-weight:700;color:var(--t100);outline:none;
+  text-align:center;
+}
+.serie-peso-input input:focus{border-color:var(--g500);box-shadow:0 0 0 2px rgba(56,142,60,.12);}
+.serie-peso-input span{font-size:12px;color:var(--t500);}
+
+/* Calorias badge */
+.calorias-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#fff8e1;border:1px solid #ffe082;
+  color:#f57f17;font-size:13px;font-weight:700;
+  padding:6px 14px;border-radius:var(--rf);margin-top:8px;
+}
+
+/* ── WORKOUT fullscreen fix ─────────────────────────────────── */
+.workout-overlay{background:var(--bg);}
+
+/* ── MOBILE SIDEBAR fix ─────────────────────────────────────── */
+@media(max-width:768px){
+  .profile-tabs{gap:0;}
+  .profile-tab{font-size:11.5px;padding:8px 6px;}
+  .imc-bar-wrap{margin:12px 0 18px;}
+}

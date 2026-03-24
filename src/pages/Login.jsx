@@ -4,8 +4,8 @@ import { iniciarSesion } from '../services/authService'
 
 export default function Login() {
   const navigate = useNavigate()
-  const [form,     setForm]     = useState({ correo: '', contrasena: '' })
-  const [error,    setError]    = useState('')
+  const [form, setForm] = useState({ correo: '', contrasena: '' })
+  const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
 
   async function handleSubmit(e) {
@@ -23,14 +23,26 @@ export default function Login() {
 
   return (
     <div className="auth-page">
-      {/* AI Studio: fondo con imagen del gym o personajes frutas */}
-      <div className="auth-card">
-        <div className="auth-card__fruits">
-          <span>🥭</span><span>🥑</span><span>🍇</span><span>🍇</span>
+      {/* Panel izquierdo — branding */}
+      <div className="auth-left">
+        <div className="auth-brand animate-fade">
+          <div className="auth-brand__logo">
+            <img src="/logo.png" alt="GYM Asica" onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block' }} />
+            <span style={{display:'none'}}>🌿</span>
+          </div>
+          <h1>GYM ASICA FARMS</h1>
+          <p>Tu plataforma de entrenamiento<br />en Olmos, Perú</p>
+          <div className="auth-fruits">
+            <span>🥭</span><span>🥑</span><span>🍇</span><span>🍇</span>
+          </div>
         </div>
+      </div>
 
-        <h1 className="auth-card__title">BIENVENIDO</h1>
-        <p className="auth-card__sub">Inicia sesión para acceder a tu perfil y al Coach IA</p>
+      {/* Panel derecho — formulario */}
+      <div className="auth-card animate-up">
+        <p className="auth-card__eyebrow">Bienvenido de vuelta</p>
+        <h2 className="auth-card__title">Inicia sesión</h2>
+        <p className="auth-card__sub">Accede a tu perfil, rutinas y al Coach IA</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
@@ -54,18 +66,26 @@ export default function Login() {
             />
           </div>
 
-          {error && <p className="form-error">{error}</p>}
+          {error && (
+            <p className="form-error">⚠️ {error}</p>
+          )}
 
-          <button className="btn btn--primary btn--full" type="submit" disabled={cargando}>
-            {cargando ? 'Entrando...' : 'Iniciar sesión'}
+          <button
+            className="btn btn--primary btn--full"
+            type="submit"
+            disabled={cargando}
+            style={{marginTop: 8}}
+          >
+            {cargando ? 'Entrando...' : 'Iniciar sesión →'}
           </button>
         </form>
 
         <p className="auth-card__switch">
-          ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
+          ¿No tienes cuenta?{' '}
+          <Link to="/registro">Regístrate gratis</Link>
         </p>
         <p className="auth-card__guest">
-          <Link to="/">Continuar sin registrarme</Link>
+          <Link to="/">← Explorar sin cuenta</Link>
         </p>
       </div>
     </div>
@@ -74,10 +94,10 @@ export default function Login() {
 
 function traducirError(code) {
   const errores = {
-    'auth/user-not-found':   'No existe una cuenta con ese correo.',
-    'auth/wrong-password':   'Contraseña incorrecta.',
-    'auth/invalid-email':    'El formato del correo no es válido.',
-    'auth/too-many-requests':'Demasiados intentos. Espera unos minutos.',
+    'auth/user-not-found':     'No existe una cuenta con ese correo.',
+    'auth/wrong-password':     'Contraseña incorrecta.',
+    'auth/invalid-email':      'El formato del correo no es válido.',
+    'auth/too-many-requests':  'Demasiados intentos. Espera unos minutos.',
     'auth/invalid-credential': 'Correo o contraseña incorrectos.'
   }
   return errores[code] ?? 'Error al iniciar sesión. Intenta de nuevo.'

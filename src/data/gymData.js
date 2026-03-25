@@ -1,6 +1,7 @@
 // ============================================================
 // DATA — Máquinas, ejercicios y rutinas del Gym Asica Farms
-// AI Studio puede editar este archivo para actualizar contenido
+// Fotos: Unsplash CDN (gratuitas, sin API key)
+// Formato: https://images.unsplash.com/photo-{ID}?w=600&q=75&auto=format
 // ============================================================
 
 // ── Máquinas y ejercicios ─────────────────────────────────────
@@ -10,8 +11,7 @@ export const MAQUINAS = [
     nombre: 'Rack de Potencia',
     categoria: 'Maquinaria',
     emoji: '🏗️',
-    // AI Studio: reemplaza imagen con foto real del rack del gym
-    imagen: '/images/maquinas/rack.jpg',
+    imagen: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'sentadilla-barra',
@@ -21,11 +21,11 @@ export const MAQUINAS = [
         dificultad: 'Intermedio',
         descripcion: 'Coloca la barra sobre tus trapecios. Pies a la anchura de los hombros. Baja controlando que las rodillas apunten hacia los pies y la espalda se mantenga neutral. Empuja el suelo para subir.',
         advertencia: 'Nunca redondees la espalda baja. Empieza con poco peso hasta dominar la técnica.',
-        series: '4',
-        repeticiones: '8-12',
-        descanso: '90 seg',
-        // AI Studio: agregar collage de 3-4 fotos mostrando la ejecución
-        fotos: ['/images/ejercicios/sentadilla-1.jpg', '/images/ejercicios/sentadilla-2.jpg', '/images/ejercicios/sentadilla-3.jpg'],
+        series: '4', repeticiones: '8-12', descanso: '90 seg',
+        fotos: [
+          'https://images.unsplash.com/photo-1566351681893-d27d80e4b232?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=sentadilla+con+barra+tecnica+correcta'
       },
       {
@@ -37,7 +37,10 @@ export const MAQUINAS = [
         descripcion: 'Agarra la barra a la anchura de los hombros. Empuja hacia arriba hasta extender los brazos, luego baja de forma controlada al nivel de la barbilla. Activa el core para no arquear la espalda.',
         advertencia: 'No bloquees los codos al subir completamente.',
         series: '4', repeticiones: '8-10', descanso: '90 seg',
-        fotos: ['/images/ejercicios/press-militar-1.jpg', '/images/ejercicios/press-militar-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=press+militar+barra+tecnica'
       },
       {
@@ -49,7 +52,10 @@ export const MAQUINAS = [
         descripcion: 'Con la barra en el suelo, agáchate manteniendo la espalda recta y neutral. Empuja el suelo hacia abajo con los pies para levantar. Es el ejercicio que más músculos trabaja simultáneamente.',
         advertencia: 'CRÍTICO: Nunca redondees la espalda. Aprende con poco peso primero.',
         series: '3', repeticiones: '5-8', descanso: '2 min',
-        fotos: ['/images/ejercicios/peso-muerto-1.jpg', '/images/ejercicios/peso-muerto-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=peso+muerto+tecnica+correcta'
       }
     ]
@@ -59,7 +65,7 @@ export const MAQUINAS = [
     nombre: 'Banco Ajustable',
     categoria: 'Maquinaria',
     emoji: '🪑',
-    imagen: '/images/maquinas/banco-inclinado.jpg',
+    imagen: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'press-inclinado-mancuernas',
@@ -70,7 +76,10 @@ export const MAQUINAS = [
         descripcion: 'Banco inclinado a 30-45°. Lleva las mancuernas a la altura del pecho y empuja hacia arriba. Baja despacio para mayor activación muscular.',
         advertencia: 'No arquees la espalda ni despegues los glúteos del banco.',
         series: '4', repeticiones: '10-12', descanso: '75 seg',
-        fotos: ['/images/ejercicios/press-inclinado-1.jpg', '/images/ejercicios/press-inclinado-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=press+inclinado+mancuernas+tecnica'
       },
       {
@@ -82,7 +91,10 @@ export const MAQUINAS = [
         descripcion: 'Banco a 90°. Mancuernas colgando a los lados, sube alternando cada brazo. Gira la muñeca al subir. No uses impulso del cuerpo.',
         advertencia: 'Codos fijos al costado del cuerpo durante todo el movimiento.',
         series: '3', repeticiones: '12-15', descanso: '60 seg',
-        fotos: ['/images/ejercicios/curl-sentado-1.jpg', '/images/ejercicios/curl-sentado-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=curl+biceps+sentado+mancuernas'
       }
     ]
@@ -92,7 +104,7 @@ export const MAQUINAS = [
     nombre: 'Press de Banca',
     categoria: 'Maquinaria',
     emoji: '🏋️',
-    imagen: '/images/maquinas/press-banca.jpg',
+    imagen: 'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'press-banca-plano',
@@ -103,7 +115,10 @@ export const MAQUINAS = [
         descripcion: 'Recuéstate, pies firmes en el suelo. Agarra la barra un poco más ancho que los hombros. Baja al pecho tocando ligeramente y empuja hacia arriba. No rebotas la barra en el pecho.',
         advertencia: 'Siempre usa seguridad o entrena con alguien cerca.',
         series: '4', repeticiones: '8-10', descanso: '90 seg',
-        fotos: ['/images/ejercicios/press-banca-1.jpg', '/images/ejercicios/press-banca-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=press+banca+tecnica+correcta'
       },
       {
@@ -115,7 +130,9 @@ export const MAQUINAS = [
         descripcion: 'Igual que el press normal pero con agarre estrecho (manos a la anchura de los hombros). Mantén los codos cerca del cuerpo.',
         advertencia: 'Agarre muy cerrado puede sobrecargar las muñecas.',
         series: '3', repeticiones: '10-12', descanso: '75 seg',
-        fotos: ['/images/ejercicios/press-cerrado-1.jpg', '/images/ejercicios/press-cerrado-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=press+banca+cerrado+triceps'
       }
     ]
@@ -125,7 +142,7 @@ export const MAQUINAS = [
     nombre: 'Banco Hiperextensiones',
     categoria: 'Maquinaria',
     emoji: '🔴',
-    imagen: '/images/maquinas/hiperextensiones.jpg',
+    imagen: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'hiperextension',
@@ -136,7 +153,9 @@ export const MAQUINAS = [
         descripcion: 'Caderas en el soporte, pies sujetos. Baja el tronco controladamente y sube hasta quedar recto. No hiperextiendas más allá de la posición neutral.',
         advertencia: 'Ideal para prevenir lesiones de espalda baja. Movimiento lento y controlado.',
         series: '3', repeticiones: '15-20', descanso: '60 seg',
-        fotos: ['/images/ejercicios/hiper-1.jpg', '/images/ejercicios/hiper-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=hiperextension+espalda+baja+tecnica'
       }
     ]
@@ -146,7 +165,7 @@ export const MAQUINAS = [
     nombre: 'Máquina de Remo',
     categoria: 'Maquinaria',
     emoji: '⚙️',
-    imagen: '/images/maquinas/remo.jpg',
+    imagen: 'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'remo-maquina',
@@ -157,7 +176,10 @@ export const MAQUINAS = [
         descripcion: 'Agarra los mangos con pronación. Tira hacia el abdomen apretando los omóplatos al final del movimiento. La espalda permanece recta.',
         advertencia: 'No uses el impulso de la espalda para iniciar el movimiento.',
         series: '4', repeticiones: '10-12', descanso: '75 seg',
-        fotos: ['/images/ejercicios/remo-1.jpg', '/images/ejercicios/remo-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=remo+maquina+espalda+tecnica'
       }
     ]
@@ -167,7 +189,7 @@ export const MAQUINAS = [
     nombre: 'Mancuernas',
     categoria: 'Peso libre',
     emoji: '💪',
-    imagen: '/images/maquinas/mancuernas.jpg',
+    imagen: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'curl-alternado',
@@ -178,7 +200,10 @@ export const MAQUINAS = [
         descripcion: 'Parado, alterna la subida de cada brazo. Gira la muñeca al subir. No balancea el cuerpo.',
         advertencia: 'Si balanceas el torso, el peso es demasiado alto.',
         series: '3', repeticiones: '12 c/brazo', descanso: '60 seg',
-        fotos: ['/images/ejercicios/curl-alt-1.jpg', '/images/ejercicios/curl-alt-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=curl+biceps+alternado+mancuernas'
       },
       {
@@ -190,7 +215,10 @@ export const MAQUINAS = [
         descripcion: 'Sentado o de pie, lleva las mancuernas a la altura de los hombros y empuja hacia arriba. Más seguro que la barra para el manguito rotador.',
         advertencia: 'Activa el core para no arquear la zona lumbar.',
         series: '4', repeticiones: '10-12', descanso: '75 seg',
-        fotos: ['/images/ejercicios/press-hombros-1.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=press+hombros+mancuernas+tecnica'
       },
       {
@@ -202,7 +230,9 @@ export const MAQUINAS = [
         descripcion: 'De pie, mancuernas a los lados. Eleva los brazos hasta la altura de los hombros con los codos ligeramente doblados. Baja despacio.',
         advertencia: 'Usa poco peso. Subir los hombros al elevar es un error común.',
         series: '4', repeticiones: '12-15', descanso: '60 seg',
-        fotos: ['/images/ejercicios/elevaciones-1.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=elevaciones+laterales+hombros+tecnica'
       },
       {
@@ -214,7 +244,10 @@ export const MAQUINAS = [
         descripcion: 'Una mancuerna en cada mano. Paso largo hacia adelante, baja la rodilla trasera casi al suelo. Sube y alterna.',
         advertencia: 'La rodilla delantera no debe sobrepasar la punta del pie.',
         series: '3', repeticiones: '10 c/pierna', descanso: '75 seg',
-        fotos: ['/images/ejercicios/zancadas-1.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=zancadas+mancuernas+tecnica+correcta'
       }
     ]
@@ -224,7 +257,7 @@ export const MAQUINAS = [
     nombre: 'Barra Olímpica',
     categoria: 'Peso libre',
     emoji: '⚡',
-    imagen: '/images/maquinas/barra.jpg',
+    imagen: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'remo-barra',
@@ -235,18 +268,20 @@ export const MAQUINAS = [
         descripcion: 'Inclínate a 45°, rodillas ligeramente dobladas. Tira de la barra hacia el ombligo apretando la espalda al final.',
         advertencia: 'Mantén la espalda neutral en toda la ejecución.',
         series: '4', repeticiones: '8-10', descanso: '90 seg',
-        fotos: ['/images/ejercicios/remo-barra-1.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=remo+barra+inclinado+espalda'
       }
     ]
   },
-  // ── Calistenia ──────────────────────────────────────────────
+  // ── Calistenia libre ─────────────────────────────────────────
   {
     id: 'sentadillas-cali',
     nombre: 'Sentadillas',
     categoria: 'Calistenia',
     emoji: '🦵',
-    imagen: '/images/ejercicios/sentadilla-libre.jpg',
+    imagen: 'https://images.unsplash.com/photo-1566351681893-d27d80e4b232?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'sentadilla-libre',
@@ -257,7 +292,9 @@ export const MAQUINAS = [
         descripcion: 'Pies a la anchura de los hombros. Baja como si fueras a sentarte, pecho arriba. Muslos paralelos al suelo.',
         advertencia: 'Rodillas en dirección de los pies, nunca hacia adentro.',
         series: '4', repeticiones: '20-25', descanso: '60 seg',
-        fotos: ['/images/ejercicios/sentadilla-libre-1.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1566351681893-d27d80e4b232?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=sentadilla+libre+calistenia+tecnica'
       },
       {
@@ -269,7 +306,9 @@ export const MAQUINAS = [
         descripcion: 'Sentadilla normal pero al subir explota en un salto. Aterriza suavemente con rodillas dobladas.',
         advertencia: 'Aterriza siempre en punta de pies primero para proteger las rodillas.',
         series: '4', repeticiones: '12-15', descanso: '75 seg',
-        fotos: ['/images/ejercicios/squat-jump-1.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1607962837359-5e7e89f86776?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=sentadilla+salto+tecnica'
       }
     ]
@@ -279,7 +318,7 @@ export const MAQUINAS = [
     nombre: 'Lagartijas',
     categoria: 'Calistenia',
     emoji: '🐊',
-    imagen: '/images/ejercicios/lagartija.jpg',
+    imagen: 'https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'lagartija-estandar',
@@ -290,7 +329,10 @@ export const MAQUINAS = [
         descripcion: 'Manos a la anchura de los hombros, cuerpo recto. Baja hasta casi tocar el suelo con el pecho, sube extendiendo los brazos.',
         advertencia: 'No dejes caer las caderas ni subas el trasero. Cuerpo recto como tabla.',
         series: '4', repeticiones: 'Máximo', descanso: '75 seg',
-        fotos: ['/images/ejercicios/lagartija-1.jpg', '/images/ejercicios/lagartija-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=lagartijas+tecnica+correcta+principiantes'
       },
       {
@@ -302,7 +344,9 @@ export const MAQUINAS = [
         descripcion: 'Junta las manos formando un diamante bajo el centro del pecho. Baja controlado.',
         advertencia: 'Puede tensar las muñecas — detente si sientes dolor.',
         series: '3', repeticiones: '10-15', descanso: '75 seg',
-        fotos: ['/images/ejercicios/lagartija-diamante-1.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=lagartija+diamante+triceps'
       }
     ]
@@ -312,7 +356,7 @@ export const MAQUINAS = [
     nombre: 'Burpees',
     categoria: 'Calistenia',
     emoji: '🔥',
-    imagen: '/images/ejercicios/burpee.jpg',
+    imagen: 'https://images.unsplash.com/photo-1607962837359-5e7e89f86776?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'burpee-completo',
@@ -323,8 +367,107 @@ export const MAQUINAS = [
         descripcion: 'Desde de pie: agáchate, pon las manos, lanza los pies atrás, haz una lagartija, regresa los pies, salta con brazos arriba. Un movimiento continuo.',
         advertencia: 'Aterriza suavemente en cada salto. Hidratarse bien antes de hacerlos.',
         series: '4', repeticiones: '10-12', descanso: '90 seg',
-        fotos: ['/images/ejercicios/burpee-1.jpg', '/images/ejercicios/burpee-2.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1607962837359-5e7e89f86776?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1518310383802-640c2de311b6?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=burpee+completo+como+hacer+tecnica'
+      }
+    ]
+  },
+  // ── Calistenia con equipo: Barra + Paralelas ─────────────────
+  {
+    id: 'barra-paralelas',
+    nombre: 'Barra de Dominadas + Paralelas',
+    categoria: 'Calistenia',
+    emoji: '🔝',
+    imagen: 'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?w=600&q=75&auto=format',
+    ejercicios: [
+      {
+        id: 'dominadas-pronadas',
+        nombre: 'Dominadas (Pull-ups)',
+        musculosPrincipales: ['Dorsal ancho', 'Bíceps'],
+        musculosSecundarios: ['Romboides', 'Trapecios medio', 'Core'],
+        dificultad: 'Avanzado',
+        descripcion: 'Agárrate a la barra con agarre prono (palmas hacia adelante) a la anchura de los hombros. Cuelga con los brazos extendidos y sube hasta que la barbilla supere la barra. Baja de forma controlada.',
+        advertencia: 'Si no puedes hacer ninguna, empieza con el ejercicio de jalón al frente o usa una banda de resistencia.',
+        series: '3-4', repeticiones: 'Máximo posible', descanso: '2 min',
+        fotos: [
+          'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=600&q=75&auto=format'
+        ],
+        videoYoutube: 'https://www.youtube.com/results?search_query=dominadas+pull+ups+tecnica+correcta'
+      },
+      {
+        id: 'chin-ups',
+        nombre: 'Chin-ups (Dominadas supinas)',
+        musculosPrincipales: ['Bíceps', 'Dorsal ancho'],
+        musculosSecundarios: ['Braquial', 'Core'],
+        dificultad: 'Intermedio',
+        descripcion: 'Agárrate con agarre supino (palmas hacia ti) a la anchura de los hombros. Sube llevando el pecho hacia la barra. El giro de las palmas activa más el bíceps que las dominadas pronadas.',
+        advertencia: 'Evita balancearte — el movimiento debe ser controlado de arriba hacia abajo.',
+        series: '3', repeticiones: '5-10', descanso: '90 seg',
+        fotos: [
+          'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?w=600&q=75&auto=format'
+        ],
+        videoYoutube: 'https://www.youtube.com/results?search_query=chin+ups+dominadas+supinas+biceps'
+      },
+      {
+        id: 'fondos-paralelas',
+        nombre: 'Fondos en paralelas (Dips)',
+        musculosPrincipales: ['Pecho inferior', 'Tríceps'],
+        musculosSecundarios: ['Deltoides frontal', 'Core'],
+        dificultad: 'Intermedio',
+        descripcion: 'Apoya las manos en las paralelas, cuerpo recto. Baja doblando los codos hasta 90° con el tronco ligeramente inclinado hacia adelante. Empuja hacia arriba. Para más pecho: inclínate más. Para más tríceps: mantente más recto.',
+        advertencia: 'No bajes más de 90° — puede sobrecargar los hombros. Detente si sientes dolor.',
+        series: '3-4', repeticiones: '8-15', descanso: '90 seg',
+        fotos: [
+          'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?w=600&q=75&auto=format'
+        ],
+        videoYoutube: 'https://www.youtube.com/results?search_query=fondos+paralelas+dips+tecnica+correcta'
+      },
+      {
+        id: 'elevaciones-rodillas-barra',
+        nombre: 'Elevaciones de rodillas colgado',
+        musculosPrincipales: ['Core', 'Abdomen'],
+        musculosSecundarios: ['Flexores de cadera', 'Antebrazos'],
+        dificultad: 'Principiante',
+        descripcion: 'Cuelga de la barra con agarre cómodo. Sube las rodillas hacia el pecho contrayendo el abdomen. Baja controlado sin balancearte.',
+        advertencia: 'No uses impulso del torso. Si sientes las muñecas débiles, fortalécelas primero con otros ejercicios.',
+        series: '3', repeticiones: '10-15', descanso: '60 seg',
+        fotos: [
+          'https://images.unsplash.com/photo-1518310383802-640c2de311b6?w=600&q=75&auto=format'
+        ],
+        videoYoutube: 'https://www.youtube.com/results?search_query=elevaciones+rodillas+barra+colgado+core'
+      },
+      {
+        id: 'hollow-body',
+        nombre: 'Hollow body hold',
+        musculosPrincipales: ['Core', 'Abdomen'],
+        musculosSecundarios: ['Flexores de cadera'],
+        dificultad: 'Intermedio',
+        descripcion: 'Recostado, eleva piernas y hombros del suelo manteniendo la espalda baja pegada. Mantén la posición. Es la base del movimiento en todos los ejercicios de calistenia avanzada.',
+        advertencia: 'Si la espalda baja se despega del suelo, sube un poco más las piernas.',
+        series: '3', repeticiones: '20-30 seg', descanso: '60 seg',
+        fotos: [
+          'https://images.unsplash.com/photo-1518310383802-640c2de311b6?w=600&q=75&auto=format'
+        ],
+        videoYoutube: 'https://www.youtube.com/results?search_query=hollow+body+hold+calistenia+core'
+      },
+      {
+        id: 'fondos-triceps-paralelas',
+        nombre: 'Fondos de tríceps en paralelas',
+        musculosPrincipales: ['Tríceps'],
+        musculosSecundarios: ['Pecho bajo', 'Deltoides'],
+        dificultad: 'Principiante',
+        descripcion: 'Tronco recto, codos apuntando hacia atrás. Baja y sube enfocándote en los tríceps. A diferencia de los fondos para pecho, mantén el cuerpo vertical.',
+        advertencia: 'No bajes más de 90° en los codos.',
+        series: '3', repeticiones: '12-20', descanso: '60 seg',
+        fotos: [
+          'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=600&q=75&auto=format'
+        ],
+        videoYoutube: 'https://www.youtube.com/results?search_query=fondos+triceps+paralelas+tecnica'
       }
     ]
   },
@@ -333,7 +476,7 @@ export const MAQUINAS = [
     nombre: 'Step / Plataforma',
     categoria: 'Accesorios',
     emoji: '⬛',
-    imagen: '/images/maquinas/step.jpg',
+    imagen: 'https://images.unsplash.com/photo-1604480132736-44c188fe4d20?w=600&q=75&auto=format',
     ejercicios: [
       {
         id: 'step-up-rodilla',
@@ -344,7 +487,9 @@ export const MAQUINAS = [
         descripcion: 'Sube al step con el pie derecho, al llegar arriba lleva la rodilla izquierda al pecho. Baja controlado. Añade mancuernas para mayor dificultad.',
         advertencia: 'Paso firme en el step antes de elevar la rodilla.',
         series: '3', repeticiones: '12 c/pierna', descanso: '60 seg',
-        fotos: ['/images/ejercicios/stepup-1.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1604480132736-44c188fe4d20?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=step+up+elevacion+rodilla+tecnica'
       },
       {
@@ -356,7 +501,9 @@ export const MAQUINAS = [
         descripcion: 'De espaldas al step, manos en el borde. Baja flexionando los codos hasta 90° y sube.',
         advertencia: 'No bajes más de 90° para proteger los hombros.',
         series: '3', repeticiones: '15', descanso: '60 seg',
-        fotos: ['/images/ejercicios/fondos-1.jpg'],
+        fotos: [
+          'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=600&q=75&auto=format'
+        ],
         videoYoutube: 'https://www.youtube.com/results?search_query=fondos+triceps+step+tecnica'
       }
     ]
@@ -432,13 +579,235 @@ export const RUTINAS = {
   }
 }
 
+// ── Zona Fit — Rutinas específicas para mujeres ───────────────
+export const RUTINAS_FEMENINAS = {
+  maquinas: {
+    nombre: 'Rutina Máquinas — Glúteos & Piernas',
+    color: '#e91e8c',
+    descripcion: 'Enfocada en glúteos, cuádriceps y tonificación. Usa principalmente el rack, banco y mancuernas.',
+    dias: [
+      {
+        dia: 'Lunes',
+        foco: 'Glúteos + Piernas',
+        ejercicios: [
+          {n:'Hip Thrust con barra',      s:'4x12'},
+          {n:'Sentadilla búlgara',        s:'3x10 c/pierna'},
+          {n:'Peso muerto rumano',        s:'4x10'},
+          {n:'Hiperextensión de espalda', s:'3x15'},
+          {n:'Elevación de talones',      s:'3x20'}
+        ]
+      },
+      {
+        dia: 'Martes',
+        foco: 'Descanso activo',
+        ejercicios: [
+          {n:'Estiramiento completo',     s:'15 min'},
+          {n:'Caminata suave',            s:'20 min'}
+        ]
+      },
+      {
+        dia: 'Miércoles',
+        foco: 'Tren superior + Core',
+        ejercicios: [
+          {n:'Press de hombros mancuernas', s:'3x12'},
+          {n:'Elevaciones laterales',       s:'3x15'},
+          {n:'Remo con máquina',            s:'4x12'},
+          {n:'Plancha abdominal',           s:'3x40seg'},
+          {n:'Lagartija rodillas',          s:'3x12'}
+        ]
+      },
+      {
+        dia: 'Jueves',
+        foco: 'Descanso activo',
+        ejercicios: [
+          {n:'Estiramiento completo',     s:'15 min'},
+          {n:'Caminata moderada',         s:'20 min'}
+        ]
+      },
+      {
+        dia: 'Viernes',
+        foco: 'Piernas completas',
+        ejercicios: [
+          {n:'Sentadilla sumo con mancuerna', s:'4x15'},
+          {n:'Zancada reversa',               s:'3x12 c/pierna'},
+          {n:'Glute bridge con peso',          s:'4x15'},
+          {n:'Step-up con rodilla',           s:'3x12'},
+          {n:'Sentadilla isométrica',         s:'3x30seg'}
+        ]
+      },
+      {
+        dia: 'Sábado',
+        foco: 'Circuito activo',
+        ejercicios: [
+          {n:'Sentadilla libre',          s:'4x20'},
+          {n:'Lagartija estándar',        s:'3x10'},
+          {n:'Step-up con rodilla',       s:'3x12'},
+          {n:'Plancha lateral',           s:'3x30seg c/lado'}
+        ]
+      },
+      {
+        dia: 'Domingo',
+        foco: 'Descanso total',
+        ejercicios: [
+          {n:'Descanso y recuperación',   s:'Obligatorio'}
+        ]
+      }
+    ]
+  },
+  hibrida: {
+    nombre: 'Rutina Híbrida — Máquinas + Calistenia',
+    color: '#9c27b0',
+    descripcion: 'Combina máquinas del gym con calistenia. Ideal para quienes quieren variedad y fuerza funcional.',
+    dias: [
+      {
+        dia: 'Lunes',
+        foco: 'Piernas (máquinas)',
+        ejercicios: [
+          {n:'Hip Thrust con barra',      s:'4x12'},
+          {n:'Sentadilla búlgara',        s:'3x10 c/pierna'},
+          {n:'Peso muerto rumano',        s:'3x12'},
+          {n:'Elevación de talones',      s:'3x20'}
+        ]
+      },
+      {
+        dia: 'Martes',
+        foco: 'Tren superior (calistenia)',
+        ejercicios: [
+          {n:'Lagartija estándar',        s:'4x máximo'},
+          {n:'Fondos de tríceps step',    s:'3x15'},
+          {n:'Plancha abdominal',         s:'3x45seg'},
+          {n:'Elevaciones rodillas barra',s:'3x12'}
+        ]
+      },
+      {
+        dia: 'Miércoles',
+        foco: 'Descanso activo',
+        ejercicios: [
+          {n:'Caminata moderada',         s:'25 min'},
+          {n:'Estiramiento',              s:'10 min'}
+        ]
+      },
+      {
+        dia: 'Jueves',
+        foco: 'Piernas (calistenia)',
+        ejercicios: [
+          {n:'Sentadilla con salto',      s:'4x15'},
+          {n:'Zancada reversa',           s:'3x12 c/pierna'},
+          {n:'Glute bridge sin peso',     s:'4x20'},
+          {n:'Step-up con rodilla',       s:'3x12'}
+        ]
+      },
+      {
+        dia: 'Viernes',
+        foco: 'Tren superior (máquinas)',
+        ejercicios: [
+          {n:'Remo con máquina',          s:'4x12'},
+          {n:'Press de hombros',          s:'3x12'},
+          {n:'Curl bíceps sentado',       s:'3x15'},
+          {n:'Hiperextensión',            s:'3x15'}
+        ]
+      },
+      {
+        dia: 'Sábado',
+        foco: 'Circuito HIIT',
+        ejercicios: [
+          {n:'Burpees modificados',       s:'4x10'},
+          {n:'Sentadilla libre',          s:'4x20'},
+          {n:'Lagartija rodillas',        s:'3x12'},
+          {n:'Plancha',                   s:'3x40seg'}
+        ]
+      },
+      {
+        dia: 'Domingo',
+        foco: 'Descanso total',
+        ejercicios: [
+          {n:'Descanso y recuperación',   s:'Obligatorio'}
+        ]
+      }
+    ]
+  },
+  calistenia: {
+    nombre: 'Rutina Solo Calistenia',
+    color: '#00897b',
+    descripcion: 'Sin máquinas ni pesas. Puedes hacerla en el gym o en casa. Enfocada en glúteos, core y tonificación total.',
+    dias: [
+      {
+        dia: 'Lunes',
+        foco: 'Glúteos + Piernas',
+        ejercicios: [
+          {n:'Sentadilla sumo',           s:'4x20'},
+          {n:'Glute bridge',              s:'4x20'},
+          {n:'Sentadilla búlgara',        s:'3x12 c/pierna'},
+          {n:'Elevación de rodilla de pie',s:'3x15 c/pierna'},
+          {n:'Zancada lateral',           s:'3x10 c/lado'}
+        ]
+      },
+      {
+        dia: 'Martes',
+        foco: 'Tren superior',
+        ejercicios: [
+          {n:'Lagartija estándar',        s:'4x máximo'},
+          {n:'Lagartija diamante',        s:'3x10'},
+          {n:'Plancha abdominal',         s:'3x45seg'},
+          {n:'Plancha lateral',           s:'3x30seg c/lado'}
+        ]
+      },
+      {
+        dia: 'Miércoles',
+        foco: 'Descanso activo',
+        ejercicios: [
+          {n:'Caminata o trote ligero',   s:'25 min'},
+          {n:'Estiramiento completo',     s:'10 min'}
+        ]
+      },
+      {
+        dia: 'Jueves',
+        foco: 'Core + Cardio',
+        ejercicios: [
+          {n:'Burpees modificados',       s:'4x10'},
+          {n:'Sentadilla con salto',      s:'4x15'},
+          {n:'Mountain climbers',         s:'3x30seg'},
+          {n:'Plancha con toque hombro',  s:'3x12 c/lado'}
+        ]
+      },
+      {
+        dia: 'Viernes',
+        foco: 'Glúteos completo',
+        ejercicios: [
+          {n:'Hip thrust en suelo',       s:'4x25'},
+          {n:'Patada trasera (Kickback)', s:'4x15 c/pierna'},
+          {n:'Sentadilla libre',          s:'4x20'},
+          {n:'Abducción lateral de pie',  s:'3x20 c/lado'}
+        ]
+      },
+      {
+        dia: 'Sábado',
+        foco: 'Circuito completo',
+        ejercicios: [
+          {n:'Burpees',                   s:'3x10'},
+          {n:'Sentadilla sumo',           s:'3x20'},
+          {n:'Lagartija estándar',        s:'3x12'},
+          {n:'Glute bridge',              s:'3x20'},
+          {n:'Plancha',                   s:'3x40seg'}
+        ]
+      },
+      {
+        dia: 'Domingo',
+        foco: 'Descanso total',
+        ejercicios: [
+          {n:'Descanso y recuperación',   s:'Obligatorio'}
+        ]
+      }
+    ]
+  }
+}
+
 // ── Contenido educativo ───────────────────────────────────────
 export const CONTENIDO_EDUCATIVO = [
   {
     id: 'por-que-ejercitar',
     titulo: '¿Por qué hacer ejercicio?',
     emoji: '🥭',
-    // AI Studio: agregar imagen motivacional aquí
     imagen: '/images/educacion/porque-ejercitar.jpg',
     contenido: 'El ejercicio regular es una de las mejores inversiones en tu salud. Mejora la fuerza, el sueño, la mente, el corazón y los huesos. Los trabajadores que se ejercitan regularmente tienen menos lesiones en el campo y más energía durante la jornada.',
     beneficios: ['Más fuerza y energía', 'Mejor sueño', 'Mente más clara', 'Corazón más sano', 'Huesos más fuertes', 'Menos estrés']

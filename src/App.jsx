@@ -13,6 +13,7 @@ import Login       from './pages/Login'
 import Registro    from './pages/Registro'
 import Admin               from './pages/Admin'
 import RutinaPersonalizada from './pages/RutinaPersonalizada'
+import Cardio              from './pages/Cardio'
 import NotFound            from './pages/NotFound'
 
 // Ruta protegida — solo usuarios logueados
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/maquinas"  element={<Maquinas />} />
         <Route path="/rutinas"   element={<Rutinas />} />
         <Route path="/perfil"    element={<Perfil />} />
+        <Route path="/cardio"    element={<Cardio />} />
 
         {/* Coach solo para usuarios logueados */}
         <Route path="/coach" element={

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   actualizarPerfil, guardarMedidas, obtenerHistorialRutinas,
-  guardarRegistroSalud, obtenerRegistrosSalud, obtenerEstadisticasPerfil
+  guardarRegistroSalud, obtenerRegistrosSalud, obtenerEstadisticasPerfil,
+  obtenerHistorialCardio
 } from '../services/dbService'
 // storage imports removed
 // updateProfile import removed
@@ -495,7 +496,10 @@ function TabGraficas({ registrosSalud, historialRutinas }) {
 
 
 // ── TAB HISTORIAL ─────────────────────────────────────────────
-function TabHistorial({ historial }) {
+const TIPO_LABELS = { garita: 'Ruta Garita (2.4km)', cancha: 'Cancha de fútbol' }
+const RITMO_LABELS = { caminando: '🚶 Caminando', trotando: '🏃 Trotando', corriendo: '⚡ Corriendo' }
+
+function TabHistorial({ historial, historialCardio }) {
   const [mes,setMes]=useState('')
   const meses=[...new Set(historial.map(h=>{const d=h.completadoEn?.toDate?.();return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:null}).filter(Boolean))]
   const filtrado=mes?historial.filter(h=>{const d=h.completadoEn?.toDate?.();return d&&`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`===mes}):historial.slice(0,50)
@@ -527,6 +531,30 @@ function TabHistorial({ historial }) {
           ))}
         </div>
       }
+
+      {/* Historial cardio */}
+      <div className="profile-section" style={{marginTop:24}}>
+        <h3>🏃 Historial Cardio</h3>
+        {historialCardio.length===0
+          ? <p className="empty-state">No hay sesiones de cardio registradas aún. <a href="/cardio" style={{color:'var(--neon)'}}>Ir a Cardio</a></p>
+          : <div className="history-list">
+              {historialCardio.map(c=>(
+                <div key={c.id} className="history-item">
+                  <div className="history-item__info">
+                    <strong>{TIPO_LABELS[c.tipo] ?? c.tipo}</strong>
+                    <p>
+                      {c.distanciaKm} km
+                      {c.duracionMinutos?` · ${c.duracionMinutos} min`:''}
+                      {c.calorias?` · ~${c.calorias} kcal`:''}
+                      {c.ritmo?` · ${RITMO_LABELS[c.ritmo]??c.ritmo}`:''}
+                    </p>
+                  </div>
+                  <span className="history-item__date">{c.fecha?.toDate?.()?.toLocaleDateString('es')??''}</span>
+                </div>
+              ))}
+            </div>
+        }
+      </div>
     </div>
   )
 }
@@ -535,10 +563,11 @@ function TabHistorial({ historial }) {
 export default function Perfil() {
   const { usuario, perfil, refrescarPerfil } = useAuth()
   const navigate = useNavigate()
-  const [tab,        setTab]        = useState('perfil')
-  const [historial,  setHistorial]  = useState([])
-  const [registros,  setRegistros]  = useState([])
-  const [stats,      setStats]      = useState(null)
+  const [tab,           setTab]        = useState('perfil')
+  const [historial,     setHistorial]  = useState([])
+  const [histCardio,    setHistCardio] = useState([])
+  const [registros,     setRegistros]  = useState([])
+  const [stats,         setStats]      = useState(null)
   const [editando,   setEditando]   = useState(false)
   const [guardando,  setGuardando]  = useState(false)
   const [subiendoFoto,setSubiendoFoto]=useState(false)
@@ -547,6 +576,7 @@ export default function Perfil() {
   useEffect(()=>{
     if(!usuario)return
     obtenerHistorialRutinas(usuario.uid,50).then(setHistorial)
+    obtenerHistorialCardio(usuario.uid,30).then(setHistCardio)
     obtenerRegistrosSalud(usuario.uid).then(setRegistros)
     obtenerEstadisticasPerfil(usuario.uid).then(setStats)
   },[usuario])
@@ -632,7 +662,7 @@ export default function Perfil() {
       {tab==='perfil'   && <TabPerfil perfil={perfil} stats={stats} historial={historial} editando={editando} setEditando={setEditando} form={form} setForm={setForm} handleGuardar={handleGuardar} guardando={guardando} onFotoChange={handleFotoChange}/>}
       {tab==='salud'    && <TabSalud perfil={perfil} onGuardado={()=>{obtenerRegistrosSalud(usuario.uid).then(setRegistros);obtenerEstadisticasPerfil(usuario.uid).then(setStats)}}/>}
       {tab==='graficas' && <TabGraficas registrosSalud={registros} historialRutinas={historial}/>}
-      {tab==='historial'&& <TabHistorial historial={historial}/>}
+      {tab==='historial'&& <TabHistorial historial={historial} historialCardio={histCardio}/>}
 
       {subiendoFoto && <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.4)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000,color:'#fff',fontSize:16,fontWeight:700}}>Subiendo foto...</div>}
     </div>

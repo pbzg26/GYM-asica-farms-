@@ -1,11 +1,12 @@
 // ============================================================
-// PÁGINA: Rutinas — con WorkoutSession, Domingo descanso, Sábado gym/casa
+// PÁGINA: Rutinas — con WorkoutSession, Domingo descanso, Sábado gym/casa, Zona Fit
 // ============================================================
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useGymData } from '../hooks/useGymData'
 import { marcarRutinaCompletada } from '../services/dbService'
+import { RUTINAS_FEMENINAS } from '../data/gymData'
 import WorkoutSession from '../components/ui/WorkoutSession'
 
 const FRASES_DESCANSO = [
@@ -29,11 +30,152 @@ const RUTINA_CASA = [
   { n: 'Zancadas con salto',   s: '3x10 c/pierna',  descanso: '60 seg' }
 ]
 
+const TIPOS_FEM = [
+  { key: 'maquinas',   label: 'Máquinas' },
+  { key: 'hibrida',    label: 'Híbrida' },
+  { key: 'calistenia', label: 'Calistenia' }
+]
+
 function getDiaActual() {
   const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
   return dias[new Date().getDay()]
 }
 
+// ── Acordeón de días compartido ────────────────────────────────
+function ListaDias({ dias, diaHoy, grupoLabel, usuario, marcando, completados, onIniciar, onMarcar }) {
+  const [diaAbierto,  setDiaAbierto]  = useState(diaHoy)
+  const [modoSabado,  setModoSabado]  = useState(null)
+  const fraseDia = FRASES_DESCANSO[Math.floor(Math.random() * FRASES_DESCANSO.length)]
+
+  return (
+    <div className="days-list">
+      {dias.map((diaInfo) => {
+        const esHoy       = diaInfo.dia === diaHoy
+        const estaAbierto = diaAbierto === diaInfo.dia
+        const yaHecho     = completados[diaInfo.dia]
+        const esDomingo   = diaInfo.dia === 'Domingo'
+        const esSabado    = diaInfo.dia === 'Sábado'
+
+        return (
+          <div
+            key={diaInfo.dia}
+            className={`day-card ${esHoy ? 'day-card--today' : ''} ${yaHecho ? 'day-card--done' : ''}`}
+          >
+            <button
+              className="day-card__header"
+              onClick={() => setDiaAbierto(estaAbierto ? null : diaInfo.dia)}
+            >
+              <div>
+                <span className="day-card__label">{diaInfo.dia} {esHoy && '· HOY'}</span>
+                <h4 className="day-card__foco">{diaInfo.foco}</h4>
+              </div>
+              <div className="day-card__right">
+                {yaHecho && <span className="day-card__check">✓</span>}
+                <span className="day-card__arrow">{estaAbierto ? '▼' : '›'}</span>
+              </div>
+            </button>
+
+            {estaAbierto && (
+              <div className="day-card__body">
+
+                {/* ── Domingo descanso ── */}
+                {esDomingo ? (
+                  <div className="descanso-card">
+                    <div className="descanso-card__emoji">😴</div>
+                    <h3 className="descanso-card__titulo">Día de descanso</h3>
+                    <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                      El descanso es parte del entrenamiento. Tus músculos se reparan y crecen mientras descansas. ¡Nos vemos mañana!
+                    </p>
+                    <p className="descanso-card__frase">"{fraseDia}"</p>
+                  </div>
+
+                ) : esSabado && esHoy && modoSabado === null ? (
+                  /* ── Sábado: elegir gym o casa ── */
+                  <div className="sabado-selector">
+                    <p className="sabado-selector__titulo">¿Dónde entrenas hoy?</p>
+                    <div className="sabado-cards">
+                      <div className="sabado-card" onClick={() => setModoSabado('gym')}>
+                        <span className="sabado-card__emoji">🏋️</span>
+                        <span>Estoy en el gym</span>
+                      </div>
+                      <div className="sabado-card" onClick={() => setModoSabado('casa')}>
+                        <span className="sabado-card__emoji">🏠</span>
+                        <span>Estoy en casa</span>
+                      </div>
+                    </div>
+                  </div>
+
+                ) : esSabado && esHoy && modoSabado === 'casa' ? (
+                  /* ── Sábado en casa ── */
+                  <>
+                    <button className="btn btn--ghost btn--sm" onClick={() => setModoSabado(null)} style={{ marginBottom: 12 }}>
+                      ← Cambiar opción
+                    </button>
+                    {RUTINA_CASA.map((ej, i) => (
+                      <div key={i} className="ej-row">
+                        <span className="ej-row__dot" />
+                        <span className="ej-row__name">{ej.n}</span>
+                        <span className="ej-row__sets">{ej.s}</span>
+                      </div>
+                    ))}
+                    {usuario && !yaHecho && (
+                      <button className="btn btn--primary btn--full" style={{ marginTop: 12 }}
+                        onClick={() => onIniciar(diaInfo.dia, RUTINA_CASA, grupoLabel)}>
+                        ▶ Comenzar rutina
+                      </button>
+                    )}
+                  </>
+
+                ) : (
+                  /* ── Día normal (o sábado gym) ── */
+                  <>
+                    {esSabado && esHoy && modoSabado === 'gym' && (
+                      <button className="btn btn--ghost btn--sm" onClick={() => setModoSabado(null)} style={{ marginBottom: 12 }}>
+                        ← Cambiar opción
+                      </button>
+                    )}
+                    {diaInfo.ejercicios.map((ej, i) => (
+                      <div key={i} className="ej-row">
+                        <span className="ej-row__dot" />
+                        <span className="ej-row__name">{ej.n}</span>
+                        <span className="ej-row__sets">{ej.s}</span>
+                      </div>
+                    ))}
+
+                    {usuario && !yaHecho && diaInfo.ejercicios?.length > 0 && (
+                      <button
+                        className="btn btn--primary btn--full"
+                        style={{ marginTop: 12 }}
+                        onClick={() => onIniciar(diaInfo.dia, diaInfo.ejercicios, grupoLabel)}
+                        disabled={marcando}
+                      >
+                        ▶ Comenzar rutina
+                      </button>
+                    )}
+
+                    {yaHecho && (
+                      <p style={{ color: 'var(--green-accent)', fontSize: 14, marginTop: 10 }}>
+                        ✓ Completado hoy
+                      </p>
+                    )}
+
+                    {!usuario && (
+                      <p className="day-card__login-hint">
+                        <a href="/login">Inicia sesión</a> para guardar tu progreso
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Página principal ──────────────────────────────────────────
 export default function Rutinas() {
   const { usuario, perfil } = useAuth()
   const { rutinas: RUTINAS } = useGymData()
@@ -41,22 +183,22 @@ export default function Rutinas() {
 
   const grupoInicial  = perfil?.grupo ?? 'A'
   const [grupoActivo, setGrupoActivo] = useState(grupoInicial)
-  const [diaAbierto,  setDiaAbierto]  = useState(getDiaActual())
   const [marcando,    setMarcando]    = useState(false)
   const [completados, setCompletados] = useState({})
-  const [modoSabado,  setModoSabado]  = useState(null) // null | 'gym' | 'casa'
   const [sesionActiva,setSesionActiva]= useState(null)
 
-  const rutina = RUTINAS[grupoActivo]
-  const diaHoy = getDiaActual()
-  const fraseDia = FRASES_DESCANSO[Math.floor(Math.random() * FRASES_DESCANSO.length)]
+  // Zona Fit
+  const [modoZonaFit,  setModoZonaFit]  = useState(false)
+  const [tipoFem,      setTipoFem]      = useState('maquinas')
 
-  async function marcar(diaKey, ejercicios, tiemposExtra = {}) {
+  const diaHoy = getDiaActual()
+
+  async function marcar(diaKey, ejercicios, grupoLabel, tiemposExtra = {}) {
     if (!usuario) return
     setMarcando(true)
     try {
       await marcarRutinaCompletada(usuario.uid, {
-        grupo: grupoActivo, dia: diaKey,
+        grupo: grupoLabel, dia: diaKey,
         ejercicios: ejercicios.map(e => e.n ?? e),
         ...tiemposExtra
       })
@@ -65,14 +207,14 @@ export default function Rutinas() {
     setMarcando(false)
   }
 
-  function iniciarSesion(diaKey, ejercicios) {
-    setSesionActiva({ diaKey, ejercicios, grupoNombre: `Grupo ${grupoActivo}` })
+  function iniciarSesion(diaKey, ejercicios, grupoLabel) {
+    setSesionActiva({ diaKey, ejercicios, grupoNombre: grupoLabel })
   }
 
   async function handleFinalizar(tiempos) {
-    const { diaKey, ejercicios } = sesionActiva
+    const { diaKey, ejercicios, grupoNombre } = sesionActiva
     setSesionActiva(null)
-    await marcar(diaKey, ejercicios, {
+    await marcar(diaKey, ejercicios, grupoNombre, {
       tiempoTotalMinutos:  tiempos.tiempoTotalMinutos,
       tiemposPorEjercicio: tiempos.tiemposPorEjercicio,
       seriesCompletadas:   tiempos.tiemposPorEjercicio?.reduce((a, e) => a + e.series.length, 0) ?? 0
@@ -92,6 +234,8 @@ export default function Rutinas() {
     )
   }
 
+  const rutinaFem = RUTINAS_FEMENINAS[tipoFem]
+
   return (
     <div className="page">
       <div className="page__header">
@@ -99,162 +243,106 @@ export default function Rutinas() {
         <p className="page__sub">5 grupos diferentes · 7 días · Sin saturar el gym</p>
       </div>
 
-      <div className="info-box">
-        <strong>¿Cómo funciona?</strong>
-        <p>Cada trabajador tiene un grupo (A–E). Así cuando 5 personas estén en el gym al mismo tiempo, nunca hacen los mismos ejercicios y no se satura ninguna máquina.</p>
-        {perfil && <p className="info-box__group">Tu grupo: <strong>Grupo {perfil.grupo}</strong></p>}
+      {/* Toggle Zona Fit */}
+      <div className="zona-fit-toggle">
+        <button
+          className={`zona-fit-btn ${!modoZonaFit ? 'active' : ''}`}
+          onClick={() => setModoZonaFit(false)}
+        >
+          💪 General (A–E)
+        </button>
+        <button
+          className={`zona-fit-btn ${modoZonaFit ? 'active' : ''}`}
+          onClick={() => setModoZonaFit(true)}
+        >
+          🌸 Zona Fit
+        </button>
       </div>
 
-      {/* Selector de grupo */}
-      <div className="group-selector">
-        {Object.keys(RUTINAS).map(g => (
-          <button
-            key={g}
-            className={`group-btn ${grupoActivo === g ? 'active' : ''} ${perfil?.grupo === g ? 'is-mine' : ''}`}
-            onClick={() => setGrupoActivo(g)}
-          >
-            Grupo {g}
-            {perfil?.grupo === g && <span className="group-btn__mine">Mi grupo</span>}
-          </button>
-        ))}
-      </div>
+      {/* ── MODO ZONA FIT ── */}
+      {modoZonaFit ? (
+        <>
+          <div className="info-box info-box--fem">
+            <strong>🌸 Zona Fit</strong>
+            <p>Rutinas diseñadas específicamente para mujeres. Enfocadas en glúteos, piernas y tonificación total. Elige el tipo de rutina según el equipo que tienes disponible.</p>
+          </div>
 
-      {/* Botón rutina personalizada */}
-      {usuario && (
-        <div style={{ marginBottom: 12 }}>
-          <button className="btn btn--ghost btn--sm" onClick={() => navigate('/rutina-personalizada')}>
-            ⭐ Mi rutina personalizada
-          </button>
-        </div>
-      )}
-
-      <h3 className="rutina-nombre">{rutina?.nombre}</h3>
-
-      {/* Acordeón de días */}
-      <div className="days-list">
-        {rutina?.dias?.map((diaInfo) => {
-          const esHoy       = diaInfo.dia === diaHoy && grupoActivo === grupoInicial
-          const estaAbierto = diaAbierto === diaInfo.dia
-          const yaHecho     = completados[diaInfo.dia]
-          const esDomingo   = diaInfo.dia === 'Domingo'
-          const esSabado    = diaInfo.dia === 'Sábado'
-
-          return (
-            <div
-              key={diaInfo.dia}
-              className={`day-card ${esHoy ? 'day-card--today' : ''} ${yaHecho ? 'day-card--done' : ''}`}
-            >
+          {/* Selector tipo de rutina */}
+          <div className="group-selector">
+            {TIPOS_FEM.map(t => (
               <button
-                className="day-card__header"
-                onClick={() => setDiaAbierto(estaAbierto ? null : diaInfo.dia)}
+                key={t.key}
+                className={`group-btn ${tipoFem === t.key ? 'active' : ''}`}
+                onClick={() => setTipoFem(t.key)}
               >
-                <div>
-                  <span className="day-card__label">{diaInfo.dia} {esHoy && '· HOY'}</span>
-                  <h4 className="day-card__foco">{diaInfo.foco}</h4>
-                </div>
-                <div className="day-card__right">
-                  {yaHecho && <span className="day-card__check">✓</span>}
-                  <span className="day-card__arrow">{estaAbierto ? '▼' : '›'}</span>
-                </div>
+                {t.label}
               </button>
+            ))}
+          </div>
 
-              {estaAbierto && (
-                <div className="day-card__body">
+          <div className="rutina-fem-header">
+            <h3 className="rutina-nombre">{rutinaFem?.nombre}</h3>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>{rutinaFem?.descripcion}</p>
+          </div>
 
-                  {/* ── Domingo descanso ── */}
-                  {esDomingo ? (
-                    <div className="descanso-card">
-                      <div className="descanso-card__emoji">😴</div>
-                      <h3 className="descanso-card__titulo">Día de descanso</h3>
-                      <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                        El descanso es parte del entrenamiento. Tus músculos se reparan y crecen mientras descansas. ¡Nos vemos mañana!
-                      </p>
-                      <p className="descanso-card__frase">"{fraseDia}"</p>
-                    </div>
+          <ListaDias
+            dias={rutinaFem?.dias ?? []}
+            diaHoy={diaHoy}
+            grupoLabel={`zonafit-${tipoFem}`}
+            usuario={usuario}
+            marcando={marcando}
+            completados={completados}
+            onIniciar={iniciarSesion}
+            onMarcar={marcar}
+          />
+        </>
 
-                  ) : esSabado && esHoy && modoSabado === null ? (
-                    /* ── Sábado: elegir gym o casa ── */
-                    <div className="sabado-selector">
-                      <p className="sabado-selector__titulo">¿Dónde entrenas hoy?</p>
-                      <div className="sabado-cards">
-                        <div className="sabado-card" onClick={() => setModoSabado('gym')}>
-                          <span className="sabado-card__emoji">🏋️</span>
-                          <span>Estoy en el gym</span>
-                        </div>
-                        <div className="sabado-card" onClick={() => setModoSabado('casa')}>
-                          <span className="sabado-card__emoji">🏠</span>
-                          <span>Estoy en casa</span>
-                        </div>
-                      </div>
-                    </div>
+      ) : (
+        /* ── MODO GENERAL ── */
+        <>
+          <div className="info-box">
+            <strong>¿Cómo funciona?</strong>
+            <p>Cada trabajador tiene un grupo (A–E). Así cuando 5 personas estén en el gym al mismo tiempo, nunca hacen los mismos ejercicios y no se satura ninguna máquina.</p>
+            {perfil && <p className="info-box__group">Tu grupo: <strong>Grupo {perfil.grupo}</strong></p>}
+          </div>
 
-                  ) : esSabado && esHoy && modoSabado === 'casa' ? (
-                    /* ── Sábado en casa ── */
-                    <>
-                      <button className="btn btn--ghost btn--sm" onClick={() => setModoSabado(null)} style={{ marginBottom: 12 }}>
-                        ← Cambiar opción
-                      </button>
-                      {RUTINA_CASA.map((ej, i) => (
-                        <div key={i} className="ej-row">
-                          <span className="ej-row__dot" />
-                          <span className="ej-row__name">{ej.n}</span>
-                          <span className="ej-row__sets">{ej.s}</span>
-                        </div>
-                      ))}
-                      {usuario && !yaHecho && (
-                        <button className="btn btn--primary btn--full" style={{ marginTop: 12 }}
-                          onClick={() => iniciarSesion(diaInfo.dia, RUTINA_CASA)}>
-                          ▶ Comenzar rutina
-                        </button>
-                      )}
-                    </>
+          {/* Selector de grupo */}
+          <div className="group-selector">
+            {Object.keys(RUTINAS).map(g => (
+              <button
+                key={g}
+                className={`group-btn ${grupoActivo === g ? 'active' : ''} ${perfil?.grupo === g ? 'is-mine' : ''}`}
+                onClick={() => setGrupoActivo(g)}
+              >
+                Grupo {g}
+                {perfil?.grupo === g && <span className="group-btn__mine">Mi grupo</span>}
+              </button>
+            ))}
+          </div>
 
-                  ) : (
-                    /* ── Día normal (o sábado gym) ── */
-                    <>
-                      {esSabado && esHoy && modoSabado === 'gym' && (
-                        <button className="btn btn--ghost btn--sm" onClick={() => setModoSabado(null)} style={{ marginBottom: 12 }}>
-                          ← Cambiar opción
-                        </button>
-                      )}
-                      {diaInfo.ejercicios.map((ej, i) => (
-                        <div key={i} className="ej-row">
-                          <span className="ej-row__dot" />
-                          <span className="ej-row__name">{ej.n}</span>
-                          <span className="ej-row__sets">{ej.s}</span>
-                        </div>
-                      ))}
-
-                      {usuario && !yaHecho && diaInfo.ejercicios?.length > 0 && (
-                        <button
-                          className="btn btn--primary btn--full"
-                          style={{ marginTop: 12 }}
-                          onClick={() => iniciarSesion(diaInfo.dia, diaInfo.ejercicios)}
-                          disabled={marcando}
-                        >
-                          ▶ Comenzar rutina
-                        </button>
-                      )}
-
-                      {yaHecho && (
-                        <p style={{ color: 'var(--green-accent)', fontSize: 14, marginTop: 10 }}>
-                          ✓ Completado hoy
-                        </p>
-                      )}
-
-                      {!usuario && (
-                        <p className="day-card__login-hint">
-                          <a href="/login">Inicia sesión</a> para guardar tu progreso
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
+          {/* Botón rutina personalizada */}
+          {usuario && (
+            <div style={{ marginBottom: 12 }}>
+              <button className="btn btn--ghost btn--sm" onClick={() => navigate('/rutina-personalizada')}>
+                ⭐ Mi rutina personalizada
+              </button>
             </div>
-          )
-        })}
-      </div>
+          )}
+
+          <h3 className="rutina-nombre">{RUTINAS[grupoActivo]?.nombre}</h3>
+
+          <ListaDias
+            dias={RUTINAS[grupoActivo]?.dias ?? []}
+            diaHoy={diaHoy}
+            grupoLabel={`Grupo ${grupoActivo}`}
+            usuario={usuario}
+            marcando={marcando}
+            completados={completados}
+            onIniciar={iniciarSesion}
+            onMarcar={marcar}
+          />
+        </>
+      )}
     </div>
   )
 }

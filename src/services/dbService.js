@@ -228,6 +228,30 @@ export async function obtenerEstadisticasPerfil(uid) {
   return { rutinasEsteMes, tiempoTotal, racha, ultimoIMC }
 }
 
+// ── Sesiones de cardio ────────────────────────────────────────
+
+export async function guardarSesionCardio(uid, datos) {
+  await addDoc(collection(db, 'usuarios', uid, 'historialCardio'), {
+    tipo:            datos.tipo,
+    distanciaKm:     datos.distanciaKm,
+    duracionMinutos: datos.duracionMinutos,
+    calorias:        datos.calorias,
+    ritmo:           datos.ritmo ?? null,
+    vueltas:         datos.vueltas ?? null,
+    fecha:           serverTimestamp()
+  })
+}
+
+export async function obtenerHistorialCardio(uid, limite = 20) {
+  const q = query(
+    collection(db, 'usuarios', uid, 'historialCardio'),
+    orderBy('fecha', 'desc'),
+    limit(limite)
+  )
+  const snap = await getDocs(q)
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
 // ── Solicitudes rutina personalizada ──────────────────────────
 
 export async function enviarSolicitudRutina(uid, { nombreUsuario, grupo, rutinaPropuesta, justificacion, condicionFisica }) {

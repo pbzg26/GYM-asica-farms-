@@ -1016,3 +1016,221 @@ input,select,textarea{font-family:var(--font);}
   .profile-tab{font-size:11.5px;padding:8px 6px;}
   .imc-bar-wrap{margin:12px 0 18px;}
 }
+
+/* ══════════════════════════════════════════════════════════════
+   IMÁGENES DE MÁQUINAS Y EJERCICIOS
+══════════════════════════════════════════════════════════════ */
+
+/* Card de máquina con imagen real */
+.machine-card__img-wrap{
+  width:100%;height:120px;overflow:hidden;border-radius:var(--r12) var(--r12) 0 0;
+  margin:-16px -16px 12px -16px;width:calc(100% + 32px);
+  background:var(--surface);
+}
+.machine-card__img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .4s ease;
+}
+.machine-card:hover .machine-card__img{transform:scale(1.05);}
+.machine-card__icon--fallback{
+  width:100%;height:100%;display:flex;align-items:center;
+  justify-content:center;font-size:40px;
+}
+
+/* Imagen detalle máquina */
+.machine-image-wrap{
+  width:100%;height:220px;border-radius:var(--r12);overflow:hidden;
+  margin-bottom:20px;background:var(--surface);
+}
+.machine-image{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* Fotos de ejercicios */
+.exercise-detail__photos{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;margin:16px 0;
+}
+.exercise-detail__photo{
+  width:100%;aspect-ratio:4/3;object-fit:cover;
+  border-radius:var(--r12);display:block;
+  background:var(--surface);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ZONA FIT — Toggle y estilos
+══════════════════════════════════════════════════════════════ */
+.zona-fit-toggle{
+  display:flex;gap:8px;margin-bottom:20px;
+  background:var(--surface);border-radius:var(--r12);padding:4px;
+}
+.zona-fit-btn{
+  flex:1;padding:10px 16px;border-radius:var(--r8);
+  border:none;cursor:pointer;font-size:14px;font-weight:600;
+  color:var(--text-muted);background:transparent;
+  transition:all .2s ease;
+}
+.zona-fit-btn.active{
+  background:var(--card-bg);color:var(--text-primary);
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+.zona-fit-btn.active:last-child{
+  background:linear-gradient(135deg,#e91e8c,#9c27b0);
+  color:#fff;
+}
+.info-box--fem{
+  background:linear-gradient(135deg,rgba(233,30,140,.08),rgba(156,39,176,.06));
+  border-color:rgba(233,30,140,.3);
+}
+.info-box--fem strong{color:#e91e8c;}
+.rutina-fem-header{margin-bottom:16px;}
+
+/* ══════════════════════════════════════════════════════════════
+   CARDIO — Página completa
+══════════════════════════════════════════════════════════════ */
+.cardio-ruta-card{
+  background:var(--card-bg);border:1px solid var(--bd);
+  border-radius:var(--r20);padding:20px;margin-bottom:20px;
+  transition:box-shadow .2s ease;
+}
+.cardio-ruta-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);}
+
+.cardio-ruta-card__header{
+  display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;
+}
+.cardio-ruta-card__icon{
+  font-size:36px;width:56px;height:56px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface);border-radius:var(--r12);flex-shrink:0;
+}
+.cardio-ruta-card__title{
+  font-size:17px;font-weight:700;color:var(--text-primary);margin:0 0 8px;
+}
+.cardio-ruta-card__meta{display:flex;flex-wrap:wrap;gap:6px;}
+.cardio-meta-pill{
+  font-size:12px;padding:3px 10px;border-radius:var(--rf);
+  background:var(--surface);color:var(--text-muted);
+  border:1px solid var(--bd);font-weight:500;
+}
+
+/* Reglas */
+.cardio-reglas{
+  background:rgba(255,152,0,.06);border:1px solid rgba(255,152,0,.2);
+  border-radius:var(--r12);padding:14px 16px;margin-bottom:16px;
+}
+.cardio-reglas__titulo{font-size:13px;font-weight:700;color:#e65100;margin-bottom:10px;}
+.cardio-reglas__lista{
+  list-style:none;padding:0;margin:0;
+  display:flex;flex-direction:column;gap:6px;
+}
+.cardio-reglas__lista li{font-size:13px;color:var(--text-primary);line-height:1.5;}
+
+/* Motivación */
+.cardio-motivacion{
+  background:linear-gradient(135deg,rgba(56,142,60,.08),rgba(27,94,32,.04));
+  border:1px solid rgba(56,142,60,.2);border-radius:var(--r12);
+  padding:14px 16px;margin-bottom:16px;
+}
+.cardio-motivacion__texto{font-size:13px;color:var(--text-primary);line-height:1.7;margin:0;}
+.cardio-motivacion__texto em{color:var(--neon);font-style:normal;font-weight:600;}
+
+/* Calculadora */
+.cardio-calculadora{
+  background:var(--surface);border-radius:var(--r12);
+  padding:16px;margin-bottom:16px;
+}
+.cardio-calculadora__titulo{
+  font-size:13px;font-weight:700;color:var(--text-muted);
+  margin-bottom:16px;text-transform:uppercase;letter-spacing:.5px;
+}
+.cardio-calc-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;gap:12px;flex-wrap:wrap;
+}
+.cardio-calc-row label{font-size:14px;font-weight:600;color:var(--text-primary);}
+
+/* Stepper de vueltas */
+.cardio-stepper{display:flex;align-items:center;gap:12px;}
+.cardio-stepper__btn{
+  width:36px;height:36px;border-radius:50%;border:2px solid var(--bd2);
+  background:var(--card-bg);font-size:18px;font-weight:700;
+  cursor:pointer;color:var(--text-primary);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.cardio-stepper__btn:hover{border-color:var(--neon);color:var(--neon);}
+.cardio-stepper__val{font-size:24px;font-weight:800;color:var(--text-primary);min-width:32px;text-align:center;}
+
+/* Selector ritmo */
+.cardio-ritmo-selector{display:flex;gap:6px;flex-wrap:wrap;}
+.cardio-ritmo-btn{
+  padding:7px 14px;border-radius:var(--rf);border:1.5px solid var(--bd2);
+  background:var(--card-bg);font-size:13px;font-weight:600;
+  cursor:pointer;color:var(--text-muted);transition:all .15s;
+}
+.cardio-ritmo-btn.active{
+  border-color:var(--neon);background:rgba(0,255,106,.1);color:var(--neon);
+}
+
+/* Resultados calculadora */
+.cardio-resultados{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  margin-top:16px;
+}
+.cardio-resultado-item{
+  background:var(--card-bg);border:1px solid var(--bd);
+  border-radius:var(--r12);padding:12px;text-align:center;
+}
+.cardio-resultado-item--calorias{
+  border-color:var(--neon);background:rgba(0,255,106,.06);
+}
+.cardio-resultado-item__val{
+  display:block;font-size:22px;font-weight:800;color:var(--text-primary);
+}
+.cardio-resultado-item--calorias .cardio-resultado-item__val{color:var(--neon);}
+.cardio-resultado-item__lbl{
+  display:block;font-size:11px;color:var(--text-muted);margin-top:2px;
+}
+
+/* Guardado OK */
+.cardio-guardado{
+  background:rgba(56,142,60,.1);border:1px solid rgba(56,142,60,.3);
+  color:#2e7d32;font-size:13px;font-weight:700;
+  padding:8px 14px;border-radius:var(--r8);margin-top:8px;text-align:center;
+}
+
+/* Modal genérico */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;padding:20px;
+}
+.modal-box{
+  background:var(--card-bg);border-radius:var(--r20);
+  padding:24px;width:100%;max-width:360px;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.modal-box__title{font-size:17px;font-weight:700;margin:0 0 8px;}
+.modal-box__actions{display:flex;gap:10px;margin-top:20px;}
+.modal-box__actions .btn{flex:1;}
+
+/* ── Hover en máquinas y ejercicios ─────────────────────────── */
+.machine-card{transition:transform .2s ease,box-shadow .2s ease;}
+.machine-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.12);}
+.exercise-row{transition:background .15s ease;}
+.exercise-row:hover{background:rgba(0,255,106,.04);}
+
+/* ── Mejoras tipografía sidebar nav ─────────────────────────── */
+.sidebar-nav__label{
+  font-size:10px;font-weight:700;letter-spacing:1.2px;
+  text-transform:uppercase;color:rgba(255,255,255,.35);
+  padding:14px 16px 6px;display:block;
+}
+
+/* ── Responsive cardio ──────────────────────────────────────── */
+@media(max-width:600px){
+  .cardio-resultados{grid-template-columns:1fr 1fr;}
+  .cardio-resultado-item--calorias{grid-column:1/-1;}
+  .cardio-ruta-card__header{flex-direction:column;gap:10px;}
+  .exercise-detail__photos{grid-template-columns:1fr;}
+  .machine-card__img-wrap{height:100px;}
+}

@@ -106,6 +106,9 @@ export default function Layout() {
             <span className="nav-icon">📅</span>Rutinas
             {getDiaLabel() !== 'Dom' && <span className="nav-pill">HOY</span>}
           </NavLink>
+          <NavLink to="/cardio" className={nc}>
+            <span className="nav-icon">🏃</span>Cardio
+          </NavLink>
 
           <span className="sidebar-nav__label">Personal</span>
           <NavLink to="/perfil" className={nc}>

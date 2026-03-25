@@ -1,8 +1,7 @@
 // ============================================================
 // COACH IA — Mango Coach
-// Usa la API de Anthropic directamente desde el cliente
-// Solo usuarios autenticados pueden usarlo
-// Filtro de tema + max_tokens limitado para optimizar costo
+// Llama al proxy /api/coach (Vercel Serverless Function)
+// La API key de Anthropic vive en el servidor, no en el cliente
 // ============================================================
 
 const TEMAS_GYM = [
@@ -16,7 +15,8 @@ const TEMAS_GYM = [
   'glúteo','gluteo','abdomen','core','fuerza','masa','grasa',
   'hiperextensión','hiperextension','press','remo','rack','step',
   'calorías','calorias','recuperación','recuperacion','proteína',
-  'calentamiento','estiramiento','dolor','lesión','postura'
+  'calentamiento','estiramiento','dolor','lesión','postura',
+  'dominadas','fondos','paralelas','calistenia','zona fit'
 ]
 
 export function esPreguntaValida(mensaje) {
@@ -32,7 +32,7 @@ ${perfil.altura ? `Altura: ${perfil.altura}cm.` : ''}
 ${perfil.meta ? `Meta: ${perfil.meta}.` : ''}` : ''
 
   return `Eres Mango Coach 🥭, coach del Gym Asica Farms (Olmos, Perú). SOLO responde sobre ejercicios, rutinas, técnica y nutrición deportiva. Si preguntan otra cosa, declina amablemente. Respuestas cortas (máx 3 párrafos), español, tono motivador y claro.${datosUsuario}
-Equipo disponible: rack de potencia, banco ajustable, press de banca, hiperextensiones, máquina de remo, mancuernas, barra olímpica, step. También calistenia libre.`
+Equipo disponible: rack de potencia, banco ajustable, press de banca, hiperextensiones, máquina de remo, mancuernas, barra olímpica, step, barra de dominadas, paralelas. También calistenia libre.`
 }
 
 export async function preguntarCoach({ mensaje, perfil, historialChat = [] }) {
@@ -48,16 +48,10 @@ export async function preguntarCoach({ mensaje, perfil, historialChat = [] }) {
     content: m.content
   }))
 
-  const apiKey = import.meta.env.VITE_ANTHROPIC_KEY
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  // Llamada al proxy del servidor (no expone la API key)
+  const response = await fetch('/api/coach', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 350,

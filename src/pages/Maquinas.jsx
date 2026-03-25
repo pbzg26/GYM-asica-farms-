@@ -41,15 +41,20 @@ export default function Maquinas() {
             )}
           </div>
 
-          {/* AI Studio: aquí van las fotos collage reales del ejercicio */}
-          <div className="exercise-detail__photos">
-            {ejercicioDetalle.fotos.map((foto, i) => (
-              <div key={i} className="exercise-detail__photo-placeholder">
-                {/* <img src={foto} alt={`Paso ${i+1}`} /> */}
-                <span className="photo-placeholder-text">Foto {i + 1}</span>
-              </div>
-            ))}
-          </div>
+          {/* Fotos del ejercicio */}
+          {ejercicioDetalle.fotos?.length > 0 && (
+            <div className="exercise-detail__photos">
+              {ejercicioDetalle.fotos.map((foto, i) => (
+                <img
+                  key={i}
+                  src={foto}
+                  alt={`${ejercicioDetalle.nombre} — foto ${i + 1}`}
+                  className="exercise-detail__photo"
+                  onError={e => { e.target.style.display = 'none' }}
+                />
+              ))}
+            </div>
+          )}
 
           <div className="exercise-detail__info">
             <div className="info-pill">
@@ -78,14 +83,16 @@ export default function Maquinas() {
             </div>
           )}
 
-          <a
-            href={ejercicioDetalle.videoYoutube}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn--youtube"
-          >
-            ▶ Ver técnica correcta en YouTube
-          </a>
+          {ejercicioDetalle.videoYoutube && (
+            <a
+              href={ejercicioDetalle.videoYoutube}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn--youtube"
+            >
+              ▶ Ver técnica correcta en YouTube
+            </a>
+          )}
         </div>
       </div>
     )
@@ -106,11 +113,17 @@ export default function Maquinas() {
           <p className="page__sub">{maquinaSeleccionada.ejercicios.length} ejercicios disponibles</p>
         </div>
 
-        {/* AI Studio: mostrar imagen real de la máquina aquí */}
-        <div className="machine-image-placeholder">
-          {/* <img src={maquinaSeleccionada.imagen} alt={maquinaSeleccionada.nombre} /> */}
-          <span>Foto de la máquina</span>
-        </div>
+        {/* Imagen de la máquina */}
+        {maquinaSeleccionada.imagen && (
+          <div className="machine-image-wrap">
+            <img
+              src={maquinaSeleccionada.imagen}
+              alt={maquinaSeleccionada.nombre}
+              className="machine-image"
+              onError={e => { e.target.parentElement.style.display = 'none' }}
+            />
+          </div>
+        )}
 
         <div className="exercises-list">
           {maquinaSeleccionada.ejercicios.map(ex => (
@@ -168,8 +181,22 @@ export default function Maquinas() {
             className="machine-card"
             onClick={() => setMaquinaSeleccionada(maq)}
           >
-            {/* AI Studio: reemplazar emoji con imagen real de la máquina */}
-            <span className="machine-card__icon">{maq.emoji}</span>
+            {maq.imagen ? (
+              <div className="machine-card__img-wrap">
+                <img
+                  src={maq.imagen}
+                  alt={maq.nombre}
+                  className="machine-card__img"
+                  onError={e => {
+                    e.target.style.display = 'none'
+                    e.target.nextSibling.style.display = 'flex'
+                  }}
+                />
+                <span className="machine-card__icon machine-card__icon--fallback" style={{display:'none'}}>{maq.emoji}</span>
+              </div>
+            ) : (
+              <span className="machine-card__icon">{maq.emoji}</span>
+            )}
             <h4 className="machine-card__name">{maq.nombre}</h4>
             <p className="machine-card__cat">{maq.categoria}</p>
             <p className="machine-card__count">{maq.ejercicios.length} ejercicios</p>

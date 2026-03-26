@@ -307,6 +307,48 @@ export async function obtenerRutinaPersonalizada(uid) {
   return { id: snap.docs[0].id, ...snap.docs[0].data() }
 }
 
+// ── Avisos del gym ────────────────────────────────────────────
+
+export async function crearAviso(datos) {
+  await addDoc(collection(db, 'avisos'), {
+    titulo:      datos.titulo,
+    descripcion: datos.descripcion,
+    tipo:        datos.tipo ?? 'info',
+    fechaInicio: datos.fechaInicio ? new Date(datos.fechaInicio) : serverTimestamp(),
+    fechaFin:    datos.fechaFin    ? new Date(datos.fechaFin)    : null,
+    activo:      true,
+    creadoPor:   datos.creadoPor ?? '',
+    creadoEn:    serverTimestamp()
+  })
+}
+
+export async function obtenerAvisosActivos() {
+  const ahora = new Date()
+  const q = query(
+    collection(db, 'avisos'),
+    where('activo', '==', true),
+    orderBy('creadoEn', 'desc')
+  )
+  const snap = await getDocs(q)
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(a => {
+      const inicio = a.fechaInicio?.toDate?.() ?? new Date(0)
+      const fin    = a.fechaFin?.toDate?.()    ?? null
+      return inicio <= ahora && (!fin || fin >= ahora)
+    })
+}
+
+export async function obtenerTodosAvisos() {
+  const q = query(collection(db, 'avisos'), orderBy('creadoEn', 'desc'))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+export async function desactivarAviso(id) {
+  await updateDoc(doc(db, 'avisos', id), { activo: false })
+}
+
 // ── Migración: gymData.js → Firestore ────────────────────────
 
 export async function migrarDatosAFirestore(MAQUINAS, RUTINAS, CONTENIDO_EDUCATIVO) {

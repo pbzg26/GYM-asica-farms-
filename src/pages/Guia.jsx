@@ -51,6 +51,27 @@ export default function Guia() {
               {item.tips.map((t, i) => <li key={i}>{t}</li>)}
             </ul>
           )}
+
+          {item.reglasGym && (
+            <div className="reglas-gym">
+              {item.reglasGym.map((seccion, i) => (
+                <details key={i} className="regla-seccion">
+                  <summary className="regla-seccion__titulo">
+                    <span>{seccion.icono}</span>
+                    {seccion.titulo}
+                  </summary>
+                  <ul className="regla-seccion__lista">
+                    {seccion.reglas.map((r, j) => (
+                      <li key={j} className="regla-item">
+                        <span className="regla-item__check">✓</span>
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ))}
+            </div>
+          )}
         </article>
       ))}
     </div>

@@ -23,7 +23,7 @@ export const MAQUINAS = [
         advertencia: 'Nunca redondees la espalda baja. Empieza con poco peso hasta dominar la técnica.',
         series: '4', repeticiones: '8-12', descanso: '90 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1566351681893-d27d80e4b232?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&q=75&auto=format',
           'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=sentadilla+con+barra+tecnica+correcta'
@@ -39,7 +39,7 @@ export const MAQUINAS = [
         series: '4', repeticiones: '8-10', descanso: '90 seg',
         fotos: [
           'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&q=75&auto=format',
-          'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1519505907962-0a6cb0480588?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=press+militar+barra+tecnica'
       },
@@ -54,7 +54,7 @@ export const MAQUINAS = [
         series: '3', repeticiones: '5-8', descanso: '2 min',
         fotos: [
           'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&q=75&auto=format',
-          'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=peso+muerto+tecnica+correcta'
       }
@@ -78,7 +78,7 @@ export const MAQUINAS = [
         series: '4', repeticiones: '10-12', descanso: '75 seg',
         fotos: [
           'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=75&auto=format',
-          'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1526401485623-4261f6e3000e?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=press+inclinado+mancuernas+tecnica'
       },
@@ -92,7 +92,7 @@ export const MAQUINAS = [
         advertencia: 'Codos fijos al costado del cuerpo durante todo el movimiento.',
         series: '3', repeticiones: '12-15', descanso: '60 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1571019615379-01831e8a9aa3?w=600&q=75&auto=format',
           'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=curl+biceps+sentado+mancuernas'
@@ -131,7 +131,7 @@ export const MAQUINAS = [
         advertencia: 'Agarre muy cerrado puede sobrecargar las muñecas.',
         series: '3', repeticiones: '10-12', descanso: '75 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1543498945-4e44b893fb28?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=press+banca+cerrado+triceps'
       }
@@ -154,7 +154,8 @@ export const MAQUINAS = [
         advertencia: 'Ideal para prevenir lesiones de espalda baja. Movimiento lento y controlado.',
         series: '3', repeticiones: '15-20', descanso: '60 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1540497077202-7035ce6a9e16?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=hiperextension+espalda+baja+tecnica'
       }
@@ -177,7 +178,7 @@ export const MAQUINAS = [
         advertencia: 'No uses el impulso de la espalda para iniciar el movimiento.',
         series: '4', repeticiones: '10-12', descanso: '75 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1590507595693-34c74e93bf1c?w=600&q=75&auto=format',
           'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=remo+maquina+espalda+tecnica'
@@ -202,7 +203,7 @@ export const MAQUINAS = [
         series: '3', repeticiones: '12 c/brazo', descanso: '60 seg',
         fotos: [
           'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=600&q=75&auto=format',
-          'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1570626820718-3b3f2e26b7a9?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=curl+biceps+alternado+mancuernas'
       },
@@ -216,8 +217,8 @@ export const MAQUINAS = [
         advertencia: 'Activa el core para no arquear la zona lumbar.',
         series: '4', repeticiones: '10-12', descanso: '75 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&q=75&auto=format',
-          'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1580261980434-de7a4d869ea8?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=press+hombros+mancuernas+tecnica'
       },
@@ -231,7 +232,7 @@ export const MAQUINAS = [
         advertencia: 'Usa poco peso. Subir los hombros al elevar es un error común.',
         series: '4', repeticiones: '12-15', descanso: '60 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1530822847156-7f7b14f33a6e?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=elevaciones+laterales+hombros+tecnica'
       },
@@ -246,7 +247,7 @@ export const MAQUINAS = [
         series: '3', repeticiones: '10 c/pierna', descanso: '75 seg',
         fotos: [
           'https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?w=600&q=75&auto=format',
-          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1571019613215-d9b3c2e52c68?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=zancadas+mancuernas+tecnica+correcta'
       }
@@ -269,7 +270,7 @@ export const MAQUINAS = [
         advertencia: 'Mantén la espalda neutral en toda la ejecución.',
         series: '4', repeticiones: '8-10', descanso: '90 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1548690312-1f5fc9a01d27?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=remo+barra+inclinado+espalda'
       }
@@ -293,7 +294,8 @@ export const MAQUINAS = [
         advertencia: 'Rodillas en dirección de los pies, nunca hacia adentro.',
         series: '4', repeticiones: '20-25', descanso: '60 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1566351681893-d27d80e4b232?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1566351681893-d27d80e4b232?w=600&q=75&auto=format',
+          'https://images.unsplash.com/photo-1550333358-d6d34a7bca4c?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=sentadilla+libre+calistenia+tecnica'
       },
@@ -307,7 +309,7 @@ export const MAQUINAS = [
         advertencia: 'Aterriza siempre en punta de pies primero para proteger las rodillas.',
         series: '4', repeticiones: '12-15', descanso: '75 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1607962837359-5e7e89f86776?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1470468969-e78e6b24aa3c?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=sentadilla+salto+tecnica'
       }
@@ -345,7 +347,7 @@ export const MAQUINAS = [
         advertencia: 'Puede tensar las muñecas — detente si sientes dolor.',
         series: '3', repeticiones: '10-15', descanso: '75 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1571019614851-d7ba1de44b72?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=lagartija+diamante+triceps'
       }
@@ -369,7 +371,7 @@ export const MAQUINAS = [
         series: '4', repeticiones: '10-12', descanso: '90 seg',
         fotos: [
           'https://images.unsplash.com/photo-1607962837359-5e7e89f86776?w=600&q=75&auto=format',
-          'https://images.unsplash.com/photo-1518310383802-640c2de311b6?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1519311726-4cb595238b50?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=burpee+completo+como+hacer+tecnica'
       }
@@ -394,7 +396,7 @@ export const MAQUINAS = [
         series: '3-4', repeticiones: 'Máximo posible', descanso: '2 min',
         fotos: [
           'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?w=600&q=75&auto=format',
-          'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1571019613576-de9ac8e45f5a?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=dominadas+pull+ups+tecnica+correcta'
       },
@@ -408,7 +410,7 @@ export const MAQUINAS = [
         advertencia: 'Evita balancearte — el movimiento debe ser controlado de arriba hacia abajo.',
         series: '3', repeticiones: '5-10', descanso: '90 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1527933784905-7ac28f3f9bf7?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=chin+ups+dominadas+supinas+biceps'
       },
@@ -423,7 +425,7 @@ export const MAQUINAS = [
         series: '3-4', repeticiones: '8-15', descanso: '90 seg',
         fotos: [
           'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=600&q=75&auto=format',
-          'https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=fondos+paralelas+dips+tecnica+correcta'
       },
@@ -437,7 +439,7 @@ export const MAQUINAS = [
         advertencia: 'No uses impulso del torso. Si sientes las muñecas débiles, fortalécelas primero con otros ejercicios.',
         series: '3', repeticiones: '10-15', descanso: '60 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1518310383802-640c2de311b6?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1516406317300-b46b7e3bff7e?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=elevaciones+rodillas+barra+colgado+core'
       },
@@ -465,7 +467,7 @@ export const MAQUINAS = [
         advertencia: 'No bajes más de 90° en los codos.',
         series: '3', repeticiones: '12-20', descanso: '60 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=fondos+triceps+paralelas+tecnica'
       }
@@ -502,7 +504,7 @@ export const MAQUINAS = [
         advertencia: 'No bajes más de 90° para proteger los hombros.',
         series: '3', repeticiones: '15', descanso: '60 seg',
         fotos: [
-          'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=600&q=75&auto=format'
+          'https://images.unsplash.com/photo-1574680178132-7a7b5b1e7c0a?w=600&q=75&auto=format'
         ],
         videoYoutube: 'https://www.youtube.com/results?search_query=fondos+triceps+step+tecnica'
       }
@@ -804,6 +806,57 @@ export const RUTINAS_FEMENINAS = {
 
 // ── Contenido educativo ───────────────────────────────────────
 export const CONTENIDO_EDUCATIVO = [
+  {
+    id: 'reglamento-gym',
+    titulo: 'Reglamento del Gym',
+    emoji: '📋',
+    contenido: 'Estas reglas existen para que todos tengamos un espacio seguro, ordenado y agradable. Cumplirlas es un signo de respeto hacia tus compañeros y hacia ti mismo.',
+    reglasGym: [
+      {
+        titulo: 'Cuidado del equipamiento',
+        icono: '🏋️',
+        reglas: [
+          'Regresa cada pesa, mancuerna o barra a su lugar después de usarla.',
+          'No dejes las bargas cargadas en el suelo o en el rack — retíralas al terminar.',
+          'Si una máquina o equipo está dañado, avisa de inmediato. No lo uses así.',
+          'Usa los equipos con cuidado: no los azotes, no los sueltes desde altura.',
+          'Limpia el banco o máquina con el paño disponible si usaste mucho sudor.'
+        ]
+      },
+      {
+        titulo: 'Comportamiento en el gym',
+        icono: '🤝',
+        reglas: [
+          'No acapares más de una máquina o área al mismo tiempo.',
+          'Pregunta siempre antes de usar un equipo que parece libre.',
+          'El tiempo entre series es para descansar, no para ocupar el equipo indefinidamente.',
+          'Música con audífonos — el volumen del altavoz molesta a los demás.',
+          'Teléfonos en silencio o vibración dentro del gym.'
+        ]
+      },
+      {
+        titulo: 'Respeto hacia las personas',
+        icono: '💚',
+        reglas: [
+          'No hagas comentarios sobre el cuerpo, peso o rendimiento de otro atleta.',
+          'Saluda al entrar y despídete al salir — la energía del grupo suma.',
+          'Si alguien pide ayuda, ayúdalo con gusto.',
+          'Lenguaje respetuoso siempre — sin insultos, sin groserías.',
+          'El gym no es lugar para discusiones de trabajo o problemas personales.'
+        ]
+      },
+      {
+        titulo: 'Compañerismo y comunidad',
+        icono: '🌿',
+        reglas: [
+          'Motiva a tus compañeros — todos empezamos desde cero.',
+          'Si ves que alguien realiza un ejercicio de forma riesgosa, avísale con respeto.',
+          'Celebra los avances de los demás — su éxito no quita el tuyo.',
+          'Somos un equipo de Asica Farms: el gym es un espacio para crecer juntos.'
+        ]
+      }
+    ]
+  },
   {
     id: 'por-que-ejercitar',
     titulo: '¿Por qué hacer ejercicio?',

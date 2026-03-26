@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { cerrarSesion } from '../../services/authService'
+import AvisoGym from '../AvisoGym'
 
 function getSaludo() {
   const h = new Date().getHours()
@@ -200,6 +201,7 @@ export default function Layout() {
         </header>
 
         <main className="main-content">
+          <AvisoGym />
           <Outlet />
         </main>
       </div>

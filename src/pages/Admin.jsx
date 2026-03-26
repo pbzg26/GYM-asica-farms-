@@ -9,15 +9,18 @@ import {
   guardarMetaRutina, guardarDiaRutina,
   guardarArticuloGuia,
   migrarDatosAFirestore,
-  obtenerTodasSolicitudes, responderSolicitud
+  obtenerTodasSolicitudes, responderSolicitud,
+  crearAviso, obtenerTodosAvisos, desactivarAviso
 } from '../services/dbService'
 import { useGymData } from '../hooks/useGymData'
+import { useAuth } from '../context/AuthContext'
 import { MAQUINAS as MAQUINAS_BASE, RUTINAS as RUTINAS_BASE, CONTENIDO_EDUCATIVO as GUIA_BASE } from '../data/gymData'
 
 const GRUPOS = ['A', 'B', 'C', 'D', 'E']
 
 // ── Tab Usuarios ──────────────────────────────────────────────
 function TabUsuarios() {
+  const { esSuperAdmin } = useAuth()
   const [usuarios,    setUsuarios]    = useState([])
   const [cargando,    setCargando]    = useState(true)
   const [filtroGrupo, setFiltroGrupo] = useState('Todos')
@@ -30,8 +33,7 @@ function TabUsuarios() {
     })
   }, [])
 
-  async function handleCambiarRol(uid, rolActual) {
-    const nuevoRol = rolActual === 'admin' ? 'usuario' : 'admin'
+  async function handleCambiarRol(uid, nuevoRol) {
     await cambiarRolUsuario(uid, nuevoRol)
     setUsuarios(prev => prev.map(u => u.uid === uid ? { ...u, rol: nuevoRol } : u))
   }
@@ -104,15 +106,18 @@ function TabUsuarios() {
                     <span className="tag">Grupo {u.grupo}</span>
                     {u.peso && <span className="tag">{u.peso} kg</span>}
                     {u.meta && <span className="tag">{u.meta}</span>}
-                    <span className={`tag ${u.rol === 'admin' ? 'tag--primary' : ''}`}>{u.rol}</span>
+                    <span className={`tag ${u.rol === 'admin' || u.rol === 'superadmin' ? 'tag--primary' : ''}`}>{u.rol}</span>
                   </div>
                 </div>
-                <button
-                  className="btn btn--ghost btn--sm"
-                  onClick={() => handleCambiarRol(u.uid, u.rol)}
+                <select
+                  value={u.rol ?? 'usuario'}
+                  onChange={e => handleCambiarRol(u.uid, e.target.value)}
+                  style={{fontSize:12,padding:'4px 8px',borderRadius:8,border:'1.5px solid var(--bd2)',background:'var(--card-bg)',color:'var(--t200)',cursor:'pointer'}}
                 >
-                  {u.rol === 'admin' ? 'Quitar admin' : 'Hacer admin'}
-                </button>
+                  <option value="usuario">Usuario</option>
+                  <option value="admin">Admin</option>
+                  {esSuperAdmin && <option value="superadmin">Super Admin</option>}
+                </select>
               </div>
             ))
           )}
@@ -816,8 +821,104 @@ function RutinaAcordeon({ rutina }) {
   )
 }
 
+// ── Tab Avisos ────────────────────────────────────────────────
+function TabAvisos() {
+  const { usuario } = useAuth()
+  const [avisos,   setAvisos]   = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [form, setForm]         = useState({ titulo: '', descripcion: '', tipo: 'info', fechaInicio: '', fechaFin: '' })
+  const [guardando, setGuardando] = useState(false)
+  const [msg, setMsg]           = useState('')
+
+  useEffect(() => { cargar() }, [])
+
+  async function cargar() {
+    setCargando(true)
+    try { setAvisos(await obtenerTodosAvisos()) } catch {}
+    setCargando(false)
+  }
+
+  async function handleCrear(e) {
+    e.preventDefault()
+    if (!form.titulo.trim()) return
+    setGuardando(true)
+    try {
+      await crearAviso({ ...form, creadoPor: usuario?.uid ?? '' })
+      setMsg('✓ Aviso publicado')
+      setForm({ titulo: '', descripcion: '', tipo: 'info', fechaInicio: '', fechaFin: '' })
+      await cargar()
+    } catch (err) { setMsg('Error: ' + err.message) }
+    setGuardando(false)
+  }
+
+  async function handleDesactivar(id) {
+    if (!confirm('¿Desactivar este aviso?')) return
+    await desactivarAviso(id)
+    await cargar()
+  }
+
+  const tipoIcon = { info: 'ℹ️', alerta: '⚠️', cierre: '🔒' }
+
+  return (
+    <>
+      <div className="form-card" style={{marginBottom:24}}>
+        <h4 style={{marginBottom:16,fontWeight:800}}>Nuevo aviso</h4>
+        <form onSubmit={handleCrear} style={{display:'flex',flexDirection:'column',gap:12}}>
+          <input className="form-input" placeholder="Título del aviso *" value={form.titulo} onChange={e=>setForm(p=>({...p,titulo:e.target.value}))} required />
+          <textarea className="form-input" placeholder="Descripción (opcional)" rows={3} value={form.descripcion} onChange={e=>setForm(p=>({...p,descripcion:e.target.value}))} style={{resize:'vertical'}} />
+          <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+            <div style={{flex:1,minWidth:140}}>
+              <label className="form-label">Tipo</label>
+              <select className="form-input" value={form.tipo} onChange={e=>setForm(p=>({...p,tipo:e.target.value}))}>
+                <option value="info">ℹ️ Información</option>
+                <option value="alerta">⚠️ Alerta</option>
+                <option value="cierre">🔒 Cierre temporal</option>
+              </select>
+            </div>
+            <div style={{flex:1,minWidth:180}}>
+              <label className="form-label">Inicio (opcional)</label>
+              <input type="datetime-local" className="form-input" value={form.fechaInicio} onChange={e=>setForm(p=>({...p,fechaInicio:e.target.value}))} />
+            </div>
+            <div style={{flex:1,minWidth:180}}>
+              <label className="form-label">Fin (opcional)</label>
+              <input type="datetime-local" className="form-input" value={form.fechaFin} onChange={e=>setForm(p=>({...p,fechaFin:e.target.value}))} />
+            </div>
+          </div>
+          {msg && <p style={{color:msg.startsWith('✓')?'var(--neon)':'var(--danger)',fontSize:13}}>{msg}</p>}
+          <button className="btn btn--primary" type="submit" disabled={guardando}>{guardando?'Publicando...':'Publicar aviso'}</button>
+        </form>
+      </div>
+
+      <h4 style={{marginBottom:12,fontWeight:800}}>Historial de avisos</h4>
+      {cargando ? <p className="loading-text">Cargando...</p> : (
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {avisos.length === 0 && <p className="empty-state">Sin avisos publicados aún.</p>}
+          {avisos.map(a => (
+            <div key={a.id} className="admin-user-card" style={{opacity:a.activo?1:.55}}>
+              <span style={{fontSize:22}}>{tipoIcon[a.tipo] ?? 'ℹ️'}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <strong style={{fontSize:14}}>{a.titulo}</strong>
+                {a.descripcion && <p style={{fontSize:12,color:'var(--t500)',margin:'2px 0 4px'}}>{a.descripcion}</p>}
+                <div className="tag-list">
+                  <span className="tag">{a.tipo}</span>
+                  {a.activo ? <span className="tag tag--primary">Activo</span> : <span className="tag">Inactivo</span>}
+                  {a.fechaFin && <span className="tag">Vence: {a.fechaFin?.toDate?.().toLocaleString('es-PE') ?? a.fechaFin}</span>}
+                </div>
+              </div>
+              {a.activo && (
+                <button className="btn btn--ghost btn--sm" onClick={() => handleDesactivar(a.id)}>Desactivar</button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
+
 // ── Panel principal ───────────────────────────────────────────
 export default function Admin() {
+  const { esSuperAdmin } = useAuth()
   const [tabActiva,     setTabActiva]     = useState('usuarios')
   const [migrando,      setMigrando]      = useState(false)
   const [msgMigrar,     setMsgMigrar]     = useState('')
@@ -835,6 +936,8 @@ export default function Admin() {
     { id: 'rutinas',     label: 'Rutinas' },
     { id: 'guia',        label: 'Guía' },
     { id: 'solicitudes', label: `Solicitudes${nPendientes > 0 ? ` (${nPendientes})` : ''}` },
+    { id: 'avisos',      label: '📢 Avisos' },
+    ...(esSuperAdmin ? [{ id: 'editor', label: '⭐ Editor' }] : []),
   ]
 
   async function handleMigrar() {
@@ -886,6 +989,26 @@ export default function Admin() {
       {tabActiva === 'rutinas'     && <TabRutinas />}
       {tabActiva === 'guia'        && <TabGuia />}
       {tabActiva === 'solicitudes' && <TabSolicitudes />}
+      {tabActiva === 'avisos'      && <TabAvisos />}
+      {tabActiva === 'editor'      && esSuperAdmin && (
+        <div>
+          <div className="page__header">
+            <h3 className="page__title" style={{fontSize:18}}>Editor de Página</h3>
+            <p className="page__sub">Edita directamente el contenido del gym desde aquí. Usa el tab Máquinas para editar ejercicios y el tab Guía para editar artículos.</p>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:16}}>
+            <div className="form-card">
+              <h4 style={{fontWeight:800,marginBottom:8}}>⚙️ Permisos de Super Admin</h4>
+              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Como Super Admin tienes acceso completo: puedes editar ejercicios (tab Máquinas), rutinas (tab Rutinas), artículos (tab Guía), y publicar avisos (tab Avisos). También puedes asignar el rol de Super Admin a otros usuarios desde el tab Usuarios.</p>
+            </div>
+            <div className="form-card">
+              <h4 style={{fontWeight:800,marginBottom:8}}>📸 Imágenes de ejercicios</h4>
+              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Para editar las fotos de un ejercicio: ve al tab Máquinas → selecciona la máquina → edita el ejercicio → en el campo "Fotos (URLs)" ingresa las URLs de Unsplash separadas por coma.</p>
+              <p style={{fontSize:12,color:'var(--t600)',marginTop:8}}>Formato: https://images.unsplash.com/photo-{'{ID}'}?w=600&q=75&auto=format</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

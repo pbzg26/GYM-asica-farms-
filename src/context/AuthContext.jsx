@@ -32,10 +32,11 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const esAdmin = perfil?.rol === 'admin'
+  const esSuperAdmin = perfil?.rol === 'superadmin'
+  const esAdmin = perfil?.rol === 'admin' || esSuperAdmin
 
   return (
-    <AuthContext.Provider value={{ usuario, perfil, cargando, esAdmin, refrescarPerfil }}>
+    <AuthContext.Provider value={{ usuario, perfil, cargando, esAdmin, esSuperAdmin, refrescarPerfil }}>
       {children}
     </AuthContext.Provider>
   )

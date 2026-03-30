@@ -71,7 +71,20 @@ export default function Reportes() {
     const file = e.target.files[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = ev => setFoto(ev.target.result)
+    reader.onload = ev => {
+      const img = new Image()
+      img.onload = () => {
+        // Comprimir a máximo 800px ancho, calidad 0.65 (Firestore límite ~1MB)
+        const MAX = 800
+        const ratio = Math.min(1, MAX / img.width)
+        const canvas = document.createElement('canvas')
+        canvas.width  = Math.round(img.width  * ratio)
+        canvas.height = Math.round(img.height * ratio)
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+        setFoto(canvas.toDataURL('image/jpeg', 0.65))
+      }
+      img.src = ev.target.result
+    }
     reader.readAsDataURL(file)
   }
 

@@ -919,13 +919,15 @@ function TabAvisos() {
 
 // ── Panel principal ───────────────────────────────────────────
 export default function Admin() {
-  const { esSuperAdmin } = useAuth()
+  const { esSuperAdmin, refrescarPerfil } = useAuth()
   const [tabActiva,     setTabActiva]     = useState('usuarios')
   const [migrando,      setMigrando]      = useState(false)
   const [msgMigrar,     setMsgMigrar]     = useState('')
   const [nPendientes,   setNPendientes]   = useState(0)
 
   useEffect(() => {
+    // Refrescar rol al montar — detecta cambios hechos en Firestore sin relanzar sesión
+    refrescarPerfil?.()
     obtenerTodasSolicitudes()
       .then(lista => setNPendientes(lista.filter(s => s.estado === 'pendiente').length))
       .catch(() => {})

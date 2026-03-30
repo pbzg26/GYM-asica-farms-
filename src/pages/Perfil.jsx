@@ -223,6 +223,33 @@ function TabPerfil({ perfil, stats, historial, editando, setEditando, form, setF
   )
 }
 
+const FACTOR_ACTIVIDAD = {
+  sedentario:  { label:'Sedentario (sin ejercicio)',       factor:1.2 },
+  ligero:      { label:'Ligero (1-2 días/semana)',         factor:1.375 },
+  moderado:    { label:'Moderado (3-5 días/semana)',       factor:1.55 },
+  activo:      { label:'Activo (6-7 días/semana)',         factor:1.725 },
+  muyActivo:   { label:'Muy activo (doble sesión diaria)', factor:1.9 },
+}
+
+function calcularTMB(peso, altura, edad, sexo) {
+  if (!peso || !altura || !edad) return null
+  if (sexo === 'Masculino') return Math.round((10*peso) + (6.25*altura) - (5*edad) + 5)
+  return Math.round((10*peso) + (6.25*altura) - (5*edad) - 161)
+}
+
+function clasificarICC(icc, sexo) {
+  if (!icc) return null
+  if (sexo === 'Masculino') {
+    if (icc < 0.90) return { label:'Bajo riesgo', color:'var(--g600)' }
+    if (icc < 1.0)  return { label:'Riesgo moderado', color:'var(--warn)' }
+    return { label:'Riesgo alto', color:'var(--err)' }
+  } else {
+    if (icc < 0.80) return { label:'Bajo riesgo', color:'var(--g600)' }
+    if (icc < 0.85) return { label:'Riesgo moderado', color:'var(--warn)' }
+    return { label:'Riesgo alto', color:'var(--err)' }
+  }
+}
+
 // ── TAB SALUD ─────────────────────────────────────────────────
 function TabSalud({ perfil, onGuardado }) {
   const { usuario } = useAuth()
@@ -232,6 +259,7 @@ function TabSalud({ perfil, onGuardado }) {
   const [altura,setAltura]=useState(String(perfil?.altura??''))
   const [condiciones,setCondiciones]=useState([])
   const [condOtro,setCondOtro]=useState('')
+  const [nivelActividad,setNivelActividad]=useState('moderado')
   const [glucosa,setGlucosa]=useState('')
   const [presionSis,setPresionSis]=useState('')
   const [presionDia,setPresionDia]=useState('')
@@ -251,6 +279,15 @@ function TabSalud({ perfil, onGuardado }) {
 
   const imc = calcularIMC(parseFloat(peso),parseFloat(altura))
   const imcInfo = imc ? clasificarIMC(imc,parseInt(edad)||30) : null
+  const tmb = calcularTMB(parseFloat(peso)||0,parseFloat(altura)||0,parseInt(edad)||0,sexo)
+  const factorObj = FACTOR_ACTIVIDAD[nivelActividad]
+  const get = tmb ? Math.round(tmb * factorObj.factor) : null
+  const hidratacion = peso ? (parseFloat(peso) * 35 / 1000).toFixed(1) : null
+  let icc = null, iccInfo = null
+  if (cintura && cadera && parseFloat(cadera) > 0) {
+    icc = parseFloat(cintura) / parseFloat(cadera)
+    iccInfo = clasificarICC(icc, sexo)
+  }
 
   const tieneDiabetes = condiciones.includes('Diabetes tipo 1')||condiciones.includes('Diabetes tipo 2')
   const tieneHiper    = condiciones.includes('Hipertensión arterial')
@@ -290,7 +327,12 @@ function TabSalud({ perfil, onGuardado }) {
         grasaCorporalMedida:parseFloat(grasaMedida)||null,
         grasaCorporalCalculada:grasaNavy?Math.round(grasaNavy*10)/10:null,
         masaMuscular:parseFloat(masaMuscular)||null,
-        frecuenciaCardiacaReposo:parseFloat(fc)||null
+        frecuenciaCardiacaReposo:parseFloat(fc)||null,
+        tmb: tmb ?? null,
+        get: get ?? null,
+        hidratacionLitros: hidratacion ? parseFloat(hidratacion) : null,
+        icc: icc ? Math.round(icc*100)/100 : null,
+        nivelActividad,
       }
       await guardarRegistroSalud(usuario.uid, datos)
       if (datos.peso || datos.altura) {
@@ -333,6 +375,56 @@ function TabSalud({ perfil, onGuardado }) {
           </div>
         )}
       </div>
+
+      {/* ── Métricas calculadas ── */}
+      {(tmb || hidratacion) && (
+        <div className="card">
+          <h4 style={{fontWeight:800,marginBottom:14,fontSize:15}}>📊 Métricas calculadas</h4>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12}}>
+            {tmb && (
+              <div className="salud-metrica-card">
+                <span className="salud-metrica-icon">🔥</span>
+                <span className="salud-metrica-val">{tmb} kcal</span>
+                <span className="salud-metrica-lbl">Metabolismo basal (TMB)</span>
+              </div>
+            )}
+            {get && (
+              <div className="salud-metrica-card salud-metrica-card--accent">
+                <span className="salud-metrica-icon">⚡</span>
+                <span className="salud-metrica-val">{get} kcal</span>
+                <span className="salud-metrica-lbl">Calorías diarias recomendadas</span>
+              </div>
+            )}
+            {hidratacion && (
+              <div className="salud-metrica-card">
+                <span className="salud-metrica-icon">💧</span>
+                <span className="salud-metrica-val">{hidratacion} L</span>
+                <span className="salud-metrica-lbl">Hidratación diaria</span>
+              </div>
+            )}
+            {icc && iccInfo && (
+              <div className="salud-metrica-card">
+                <span className="salud-metrica-icon">📐</span>
+                <span className="salud-metrica-val" style={{color:iccInfo.color}}>{icc.toFixed(2)}</span>
+                <span className="salud-metrica-lbl">Índice cintura/cadera — <strong style={{color:iccInfo.color}}>{iccInfo.label}</strong></span>
+              </div>
+            )}
+          </div>
+          <div style={{marginTop:12}}>
+            <label style={{fontSize:12,fontWeight:700,color:'var(--t400)',display:'block',marginBottom:6}}>Nivel de actividad física</label>
+            <select
+              className="form-input"
+              style={{fontSize:13}}
+              value={nivelActividad}
+              onChange={e=>setNivelActividad(e.target.value)}
+            >
+              {Object.entries(FACTOR_ACTIVIDAD).map(([k,v])=>(
+                <option key={k} value={k}>{v.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <h4 style={{fontWeight:800,marginBottom:14,fontSize:15}}>Condiciones de salud</h4>

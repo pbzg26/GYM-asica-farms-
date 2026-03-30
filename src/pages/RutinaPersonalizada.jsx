@@ -1,13 +1,11 @@
 // ============================================================
-// PÁGINA: RutinaPersonalizada — wizard de 3 pasos + estados
+// PÁGINA: Mi Rutina Personalizada — creación y edición directa
 // ============================================================
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useGymData } from '../hooks/useGymData'
-import {
-  enviarSolicitudRutina, obtenerMiSolicitud
-} from '../services/dbService'
+import { guardarMiRutina, obtenerMiRutina, marcarRutinaCompletada } from '../services/dbService'
 import WorkoutSession from '../components/ui/WorkoutSession'
 
 const DIAS_SEMANA = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
@@ -17,62 +15,87 @@ export default function RutinaPersonalizada() {
   const { maquinas } = useGymData()
   const navigate = useNavigate()
 
-  const [solicitud,  setSolicitud]  = useState(null)  // null = no cargado
-  const [cargando,   setCargando]   = useState(true)
-  const [creando,    setCreando]    = useState(false)  // mostrar formulario
-  const [paso,       setPaso]       = useState(1)
-  const [enviando,   setEnviando]   = useState(false)
-  const [error,      setError]      = useState('')
-  const [sesion,     setSesion]     = useState(null)
-  const [detalle,    setDetalle]    = useState(false)
+  const [rutina, setRutina] = useState(null) // null = no cargado, {} = vacía, {dias:[...]} = tiene rutina
+  const [cargando, setCargando] = useState(true)
+  const [editando, setEditando] = useState(false)
+  const [guardando, setGuardando] = useState(false)
+  const [sesion, setSesion] = useState(null) // { dia, ejercicios }
+  const [msgOk, setMsgOk] = useState('')
 
-  // Datos del wizard
-  const [diasSeleccionados, setDiasSeleccionados] = useState([])
-  const [ejerciciosPorDia, setEjerciciosPorDia]   = useState({}) // { Lunes: [{ nombre, series, reps }] }
-  const [justificacion,    setJustificacion]       = useState('')
-  const [condicion,        setCondicion]           = useState('')
-  const [aceptado,         setAceptado]            = useState(false)
-  const [diaActivo,        setDiaActivo]           = useState(null)
-  const [busqueda,         setBusqueda]            = useState('')
-  const [ejercicioLibre,   setEjercicioLibre]      = useState(null) // null | { nombre, series, reps, desc }
+  // Estado del editor
+  const [diasSel, setDiasSel] = useState([])
+  const [ejercPorDia, setEjercPorDia] = useState({})
+  const [diaActivo, setDiaActivo] = useState(null)
+  const [busqueda, setBusqueda] = useState('')
+  const [modoLibre, setModoLibre] = useState(false)
+  const [libre, setLibre] = useState({ nombre:'', series:'3', reps:'10', desc:'' })
 
-  // Todos los ejercicios del catálogo
-  const catalogo = maquinas.flatMap(m =>
-    (m.ejercicios ?? []).map(e => ({ ...e, maquina: m.nombre }))
-  )
+  const catalogo = maquinas.flatMap(m => (m.ejercicios ?? []).map(e => ({ ...e, maquina: m.nombre })))
   const catalogoFiltrado = busqueda.trim()
     ? catalogo.filter(e => e.nombre?.toLowerCase().includes(busqueda.toLowerCase()))
-    : []
+    : catalogo.slice(0, 8)
 
   useEffect(() => {
     if (!usuario) return
-    cargarSolicitud()
+    cargar()
   }, [usuario])
 
-  async function cargarSolicitud() {
+  async function cargar() {
     setCargando(true)
     try {
-      const s = await obtenerMiSolicitud(usuario.uid)
-      setSolicitud(s)
-    } catch(e) { setError('Error: ' + e.message) }
+      const r = await obtenerMiRutina(usuario.uid)
+      setRutina(r)
+    } catch {}
     setCargando(false)
   }
 
-  // Ejercicios de un día
-  function getEjs(dia) { return ejerciciosPorDia[dia] ?? [] }
-  function setEjs(dia, lista) { setEjerciciosPorDia(p => ({ ...p, [dia]: lista })) }
+  function iniciarEditor(rutinaExistente) {
+    if (rutinaExistente?.dias?.length) {
+      const dias = rutinaExistente.dias.map(d => d.dia)
+      const ejPorDia = {}
+      rutinaExistente.dias.forEach(d => { ejPorDia[d.dia] = d.ejercicios })
+      setDiasSel(dias)
+      setEjercPorDia(ejPorDia)
+      setDiaActivo(dias[0])
+    } else {
+      setDiasSel([])
+      setEjercPorDia({})
+      setDiaActivo(null)
+    }
+    setBusqueda('')
+    setModoLibre(false)
+    setEditando(true)
+  }
+
+  function toggleDia(dia) {
+    setDiasSel(prev => {
+      if (prev.includes(dia)) {
+        const nuevo = prev.filter(d => d !== dia)
+        if (diaActivo === dia) setDiaActivo(nuevo[0] ?? null)
+        return nuevo
+      }
+      const nuevo = [...prev, dia]
+      if (!diaActivo) setDiaActivo(dia)
+      return nuevo
+    })
+  }
+
+  function getEjs(dia) { return ejercPorDia[dia] ?? [] }
+  function setEjs(dia, lista) { setEjercPorDia(prev => ({ ...prev, [dia]: lista })) }
 
   function agregarDelCatalogo(ej) {
     if (!diaActivo) return
     const lista = getEjs(diaActivo)
     if (lista.find(e => e.nombre === ej.nombre)) return
     setEjs(diaActivo, [...lista, { nombre: ej.nombre, series: ej.series ?? '3', reps: ej.repeticiones ?? '10', desc: ej.descripcion ?? '' }])
+    setBusqueda('')
   }
 
   function agregarLibre() {
-    if (!diaActivo || !ejercicioLibre?.nombre) return
-    setEjs(diaActivo, [...getEjs(diaActivo), { ...ejercicioLibre }])
-    setEjercicioLibre(null)
+    if (!diaActivo || !libre.nombre.trim()) return
+    setEjs(diaActivo, [...getEjs(diaActivo), { ...libre, nombre: libre.nombre.trim() }])
+    setLibre({ nombre:'', series:'3', reps:'10', desc:'' })
+    setModoLibre(false)
   }
 
   function eliminarEj(dia, idx) {
@@ -81,372 +104,313 @@ export default function RutinaPersonalizada() {
 
   function moverEj(dia, idx, dir) {
     const lista = [...getEjs(dia)]
-    const nuevo = idx + dir
-    if (nuevo < 0 || nuevo >= lista.length) return
-    ;[lista[idx], lista[nuevo]] = [lista[nuevo], lista[idx]]
+    const swap = idx + dir
+    if (swap < 0 || swap >= lista.length) return
+    ;[lista[idx], lista[swap]] = [lista[swap], lista[idx]]
     setEjs(dia, lista)
   }
 
-  function actualizarCampo(dia, idx, campo, valor) {
+  function actualizarEj(dia, idx, campo, valor) {
     const lista = [...getEjs(dia)]
     lista[idx] = { ...lista[idx], [campo]: valor }
     setEjs(dia, lista)
   }
 
-  function toggleDia(dia) {
-    setDiasSeleccionados(prev =>
-      prev.includes(dia) ? prev.filter(d => d !== dia) : [...prev, dia]
-    )
-  }
+  async function guardar() {
+    if (diasSel.length === 0) { alert('Selecciona al menos un día de entrenamiento'); return }
+    const sinEjs = diasSel.filter(d => getEjs(d).length === 0)
+    if (sinEjs.length) { alert(`Agrega ejercicios para: ${sinEjs.join(', ')}`); return }
 
-  function validarPaso1() {
-    return diasSeleccionados.length > 0 &&
-      diasSeleccionados.every(d => getEjs(d).length > 0)
-  }
-
-  function validarPaso2() {
-    return justificacion.trim().length >= 30 && aceptado
-  }
-
-  async function enviar() {
-    if (!usuario || !perfil) return
-    setEnviando(true)
+    setGuardando(true)
     try {
-      // Construir rutinaPropuesta
-      const rutinaPropuesta = diasSeleccionados.map(dia => ({
-        dia, ejercicios: getEjs(dia)
-      }))
-      await enviarSolicitudRutina(usuario.uid, {
-        nombreUsuario: perfil.nombre,
-        grupo: perfil.grupo,
-        rutinaPropuesta,
-        justificacion,
-        condicionFisica: condicion
-      })
-      await cargarSolicitud()
-      setCreando(false)
-    } catch(e) { setError('Error al enviar: ' + e.message) }
-    setEnviando(false)
+      const datos = {
+        dias: diasSel.map(dia => ({ dia, ejercicios: getEjs(dia) })),
+        diasSemana: diasSel.length,
+        nombre: perfil?.nombre ?? 'Mi rutina',
+      }
+      await guardarMiRutina(usuario.uid, datos)
+      setRutina(datos)
+      setEditando(false)
+      setMsgOk('✅ Rutina guardada correctamente')
+      setTimeout(() => setMsgOk(''), 3000)
+    } catch (e) {
+      alert('Error al guardar: ' + e.message)
+    }
+    setGuardando(false)
   }
 
-  // ── Sin sesión ──
-  if (!usuario) {
-    return (
-      <div className="page page--center">
-        <p>Debes <a href="/login">iniciar sesión</a> para acceder.</p>
-      </div>
-    )
+  async function handleFinalizar(tiempos) {
+    if (!sesion) return
+    await marcarRutinaCompletada(usuario.uid, {
+      grupo: 'Personalizada',
+      dia: sesion.dia,
+      ejercicios: sesion.ejercicios.map(e => e.n),
+      tiempoTotalMinutos: tiempos?.tiempoTotalMinutos ?? 0,
+      tiemposPorEjercicio: tiempos?.tiemposPorEjercicio ?? [],
+      seriesCompletadas: tiempos?.tiemposPorEjercicio?.reduce((a,e)=>a+e.series.length,0) ?? 0
+    })
+    setSesion(null)
+    setMsgOk('🎉 ¡Sesión completada y guardada!')
+    setTimeout(() => setMsgOk(''), 3500)
   }
 
+  // ── Render: WorkoutSession ──────────────────────────────────
   if (sesion) {
     return (
       <WorkoutSession
-        ejercicios={sesion.ejercicios.map(e => ({ n: e.nombre ?? e.n, s: `${e.series}x${e.reps}` }))}
-        grupoNombre="Personalizada"
+        ejercicios={sesion.ejercicios}
+        grupoNombre="Mi Rutina"
         diaNombre={sesion.dia}
-        onFinalizar={() => setSesion(null)}
+        pesoUsuario={perfil?.peso ?? 70}
+        onFinalizar={handleFinalizar}
         onSalir={() => setSesion(null)}
       />
     )
   }
 
-  if (cargando) return <div className="page"><p className="loading-text">Cargando...</p></div>
-
-  // ── Vista 1: Sin solicitud y no creando ──────────────────────
-  if (!solicitud && !creando) {
+  if (!usuario) {
     return (
-      <div className="page">
-        <div className="page__header">
-          <h2 className="page__title">Rutina personalizada</h2>
-          <p className="page__sub">Diseña tu propia rutina · el admin la revisará</p>
-        </div>
-        <div className="profile-section" style={{ textAlign: 'center', padding: '40px 24px' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>⭐</div>
-          <h3 style={{ marginBottom: 12 }}>Crea tu rutina personalizada</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-            Elige tus días, selecciona ejercicios del catálogo o agrega los tuyos, y el administrador la revisará antes de activarla.
-          </p>
-          {error && <p style={{ color: 'var(--danger)', marginBottom: 12 }}>{error}</p>}
-          <button className="btn btn--primary" onClick={() => setCreando(true)}>
-            Crear mi rutina personalizada
-          </button>
-        </div>
+      <div className="page page--center">
+        <h2>Inicia sesión para acceder a tu rutina personalizada</h2>
+        <button className="btn btn--primary" onClick={() => navigate('/login')}>Iniciar sesión</button>
       </div>
     )
   }
 
-  // ── Vista 2: Formulario wizard ───────────────────────────────
-  if (creando) {
+  if (cargando) {
+    return <div className="page page--center"><div className="spinner" /><p>Cargando tu rutina...</p></div>
+  }
+
+  // ── Render: Editor ─────────────────────────────────────────
+  if (editando) {
     return (
       <div className="page">
-        <div className="page__header">
-          <button className="btn btn--ghost btn--sm" onClick={() => setCreando(false)} style={{ marginBottom: 8 }}>← Volver</button>
-          <h2 className="page__title">Nueva rutina personalizada</h2>
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:24,flexWrap:'wrap'}}>
+          <button className="back-btn" onClick={() => setEditando(false)}>← Cancelar</button>
+          <h2 className="page__title" style={{marginBottom:0}}>
+            {rutina?.dias?.length ? 'Editar mi rutina' : 'Crear mi rutina'}
+          </h2>
         </div>
 
-        {/* Pasos */}
-        <div className="wizard-steps">
-          {['Días y ejercicios','Justificación','Confirmar'].map((label, i) => (
-            <div key={i} className={`wizard-step ${paso === i+1 ? 'active' : paso > i+1 ? 'done' : ''}`}>
-              {i+1}. {label}
-            </div>
-          ))}
+        {/* Paso 1: Días */}
+        <div className="card" style={{marginBottom:20}}>
+          <h3 style={{fontSize:15,fontWeight:800,marginBottom:12}}>1. Selecciona tus días de entrenamiento</h3>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            {DIAS_SEMANA.map(dia => (
+              <button
+                key={dia}
+                className={`chip ${diasSel.includes(dia) ? 'chip--active' : ''}`}
+                onClick={() => toggleDia(dia)}
+              >{dia}</button>
+            ))}
+          </div>
+          <p style={{fontSize:12,color:'var(--t500)',marginTop:10}}>Domingo = descanso obligatorio</p>
         </div>
 
-        {/* PASO 1 */}
-        {paso === 1 && (
-          <div>
-            <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 12 }}>
-              Selecciona los días que entrenas y añade ejercicios a cada uno.
-            </p>
-            <div className="dias-pills">
-              {DIAS_SEMANA.map(dia => (
+        {/* Paso 2: Ejercicios por día */}
+        {diasSel.length > 0 && (
+          <div className="card" style={{marginBottom:20}}>
+            <h3 style={{fontSize:15,fontWeight:800,marginBottom:12}}>2. Agrega ejercicios por día</h3>
+
+            {/* Tabs de días */}
+            <div className="admin-tabs" style={{marginBottom:16}}>
+              {diasSel.map(dia => (
                 <button
                   key={dia}
-                  className={`dia-pill ${diasSeleccionados.includes(dia) ? 'active' : ''}`}
-                  onClick={() => toggleDia(dia)}
+                  className={`admin-tab ${diaActivo===dia?'active':''}`}
+                  onClick={() => setDiaActivo(dia)}
                 >
                   {dia}
+                  {getEjs(dia).length > 0 && <span style={{marginLeft:6,background:'rgba(255,255,255,.25)',borderRadius:99,padding:'1px 6px',fontSize:11}}>{getEjs(dia).length}</span>}
                 </button>
               ))}
-              <button className="dia-pill" disabled title="Día de descanso obligatorio" style={{ opacity: 0.4, cursor: 'not-allowed' }}>
-                Domingo
-              </button>
             </div>
 
-            {/* Ejercicios por día */}
-            {diasSeleccionados.map(dia => (
-              <div key={dia} className="profile-section" style={{ marginBottom: 12 }}>
-                <button
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', width: '100%', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', fontSize: 15, fontWeight: 700, padding: 0 }}
-                  onClick={() => setDiaActivo(diaActivo === dia ? null : dia)}
-                >
-                  <span>{dia} <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>· {getEjs(dia).length} ejercicios</span></span>
-                  <span>{diaActivo === dia ? '▼' : '›'}</span>
-                </button>
+            {diaActivo && (
+              <>
+                {/* Lista de ejercicios del día */}
+                {getEjs(diaActivo).length === 0 && (
+                  <p style={{color:'var(--t500)',fontSize:13,marginBottom:12}}>Sin ejercicios. Agrega desde el catálogo o crea uno libre.</p>
+                )}
+                {getEjs(diaActivo).map((ej, i) => (
+                  <div key={i} className="rutina-ej-row">
+                    <div style={{flex:1,minWidth:0}}>
+                      <strong style={{fontSize:13,display:'block',marginBottom:4}}>{ej.nombre}</strong>
+                      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:4}}>
+                          <span style={{fontSize:11,color:'var(--t500)'}}>Series:</span>
+                          <input
+                            className="form-input"
+                            style={{width:52,padding:'3px 6px',fontSize:12,textAlign:'center'}}
+                            value={ej.series}
+                            onChange={e => actualizarEj(diaActivo,i,'series',e.target.value)}
+                          />
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:4}}>
+                          <span style={{fontSize:11,color:'var(--t500)'}}>Reps:</span>
+                          <input
+                            className="form-input"
+                            style={{width:60,padding:'3px 6px',fontSize:12,textAlign:'center'}}
+                            value={ej.reps}
+                            onChange={e => actualizarEj(diaActivo,i,'reps',e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{display:'flex',gap:4,flexShrink:0}}>
+                      <button className="btn btn--ghost btn--sm" style={{padding:'5px 8px'}} onClick={() => moverEj(diaActivo,i,-1)} title="Subir">↑</button>
+                      <button className="btn btn--ghost btn--sm" style={{padding:'5px 8px'}} onClick={() => moverEj(diaActivo,i,+1)} title="Bajar">↓</button>
+                      <button className="btn btn--ghost btn--sm" style={{padding:'5px 8px',color:'var(--err)'}} onClick={() => eliminarEj(diaActivo,i)}>✕</button>
+                    </div>
+                  </div>
+                ))}
 
-                {diaActivo === dia && (
-                  <div style={{ marginTop: 14 }}>
-                    {/* Buscador catálogo */}
-                    <div className="form-group">
+                {/* Buscador catálogo */}
+                <div style={{marginTop:14,borderTop:'1px solid var(--bd)',paddingTop:14}}>
+                  <div style={{display:'flex',gap:8,marginBottom:10,flexWrap:'wrap'}}>
+                    <button
+                      className={`btn btn--sm ${!modoLibre?'btn--primary':'btn--ghost'}`}
+                      onClick={() => setModoLibre(false)}
+                    >📋 Del catálogo</button>
+                    <button
+                      className={`btn btn--sm ${modoLibre?'btn--primary':'btn--ghost'}`}
+                      onClick={() => setModoLibre(true)}
+                    >+ Ejercicio libre</button>
+                  </div>
+
+                  {!modoLibre ? (
+                    <>
                       <input
-                        placeholder="Buscar ejercicio del catálogo..."
+                        className="form-input"
+                        placeholder="Buscar ejercicio (ej: sentadilla, press...)"
                         value={busqueda}
                         onChange={e => setBusqueda(e.target.value)}
+                        style={{marginBottom:8}}
                       />
-                    </div>
-                    {catalogoFiltrado.length > 0 && (
-                      <div style={{ maxHeight: 160, overflowY: 'auto', border: '1px solid var(--card-border)', borderRadius: 8, marginBottom: 10 }}>
-                        {catalogoFiltrado.slice(0,10).map((ej, i) => (
-                          <button key={i}
-                            style={{ display: 'block', width: '100%', background: 'none', border: 'none', padding: '8px 12px', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, borderBottom: '1px solid var(--card-border)' }}
-                            onClick={() => { agregarDelCatalogo(ej); setBusqueda('') }}
+                      <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:200,overflowY:'auto'}}>
+                        {catalogoFiltrado.map(ej => (
+                          <button
+                            key={ej.id ?? ej.nombre}
+                            className="exercise-row"
+                            style={{padding:'8px 12px'}}
+                            onClick={() => agregarDelCatalogo(ej)}
                           >
-                            {ej.nombre} <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>· {ej.maquina}</span>
+                            <div style={{textAlign:'left',flex:1}}>
+                              <span style={{fontSize:13,fontWeight:700}}>{ej.nombre}</span>
+                              <span style={{fontSize:11,color:'var(--t500)',marginLeft:8}}>{ej.maquina}</span>
+                            </div>
+                            <span style={{color:'var(--g600)',fontWeight:800}}>+</span>
                           </button>
                         ))}
+                        {busqueda && catalogoFiltrado.length === 0 && (
+                          <p style={{fontSize:12,color:'var(--t500)',padding:'8px 0'}}>Sin resultados. Intenta con otro término.</p>
+                        )}
                       </div>
-                    )}
-
-                    {/* Ejercicio libre */}
-                    {ejercicioLibre === null ? (
-                      <button className="btn btn--ghost btn--sm" onClick={() => setEjercicioLibre({ nombre: '', series: '3', reps: '10', desc: '' })} style={{ marginBottom: 10 }}>
-                        + Ejercicio libre
-                      </button>
-                    ) : (
-                      <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: 12, marginBottom: 10 }}>
-                        <div className="form-group"><label>Nombre</label><input value={ejercicioLibre.nombre} onChange={e => setEjercicioLibre(p => ({ ...p, nombre: e.target.value }))} /></div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                          <div className="form-group"><label>Series</label><input type="number" value={ejercicioLibre.series} onChange={e => setEjercicioLibre(p => ({ ...p, series: e.target.value }))} /></div>
-                          <div className="form-group"><label>Reps</label><input value={ejercicioLibre.reps} onChange={e => setEjercicioLibre(p => ({ ...p, reps: e.target.value }))} /></div>
-                        </div>
-                        <div className="form-group"><label>Descripción (opcional)</label><textarea value={ejercicioLibre.desc} onChange={e => setEjercicioLibre(p => ({ ...p, desc: e.target.value }))} /></div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button className="btn btn--primary btn--sm" onClick={agregarLibre} disabled={!ejercicioLibre.nombre}>Agregar</button>
-                          <button className="btn btn--ghost btn--sm" onClick={() => setEjercicioLibre(null)}>Cancelar</button>
-                        </div>
+                    </>
+                  ) : (
+                    <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                      <input className="form-input" placeholder="Nombre del ejercicio *" value={libre.nombre} onChange={e=>setLibre(f=>({...f,nombre:e.target.value}))} />
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                        <input className="form-input" placeholder="Series (ej: 4)" value={libre.series} onChange={e=>setLibre(f=>({...f,series:e.target.value}))} />
+                        <input className="form-input" placeholder="Reps (ej: 8-12)" value={libre.reps} onChange={e=>setLibre(f=>({...f,reps:e.target.value}))} />
                       </div>
-                    )}
-
-                    {/* Lista ejercicios del día */}
-                    {getEjs(dia).map((ej, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, background: 'var(--card-bg)', borderRadius: 8, padding: '8px 10px' }}>
-                        <div style={{ flex: 1 }}>
-                          <strong style={{ fontSize: 13 }}>{ej.nombre}</strong>
-                          <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                            <input type="number" value={ej.series} onChange={e => actualizarCampo(dia, idx, 'series', e.target.value)}
-                              style={{ width: 48, background: 'transparent', border: '1px solid var(--card-border)', borderRadius: 6, padding: '2px 6px', color: 'var(--text-primary)', fontSize: 12 }} />
-                            <span style={{ color: 'var(--text-muted)', fontSize: 12, alignSelf: 'center' }}>×</span>
-                            <input value={ej.reps} onChange={e => actualizarCampo(dia, idx, 'reps', e.target.value)}
-                              style={{ width: 56, background: 'transparent', border: '1px solid var(--card-border)', borderRadius: 6, padding: '2px 6px', color: 'var(--text-primary)', fontSize: 12 }} />
-                          </div>
-                        </div>
-                        <button onClick={() => moverEj(dia, idx, -1)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14 }}>↑</button>
-                        <button onClick={() => moverEj(dia, idx, 1)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14 }}>↓</button>
-                        <button onClick={() => eliminarEj(dia, idx)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: 16 }}>×</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <button
-              className="btn btn--primary btn--full"
-              onClick={() => setPaso(2)}
-              disabled={!validarPaso1()}
-              style={{ marginTop: 16 }}
-            >
-              Siguiente →
-            </button>
-            {!validarPaso1() && diasSeleccionados.length > 0 && (
-              <p style={{ fontSize: 12, color: 'var(--warning)', marginTop: 8 }}>Cada día activo debe tener al menos 1 ejercicio.</p>
+                      <button className="btn btn--primary btn--sm" onClick={agregarLibre}>+ Agregar ejercicio</button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         )}
 
-        {/* PASO 2 */}
-        {paso === 2 && (
-          <div>
-            <div className="form-group" style={{ marginBottom: 16 }}>
-              <label>¿Por qué quieres una rutina personalizada? *</label>
-              <textarea
-                value={justificacion}
-                onChange={e => setJustificacion(e.target.value)}
-                placeholder="Mínimo 30 caracteres..."
-                style={{ minHeight: 100 }}
-              />
-              <span style={{ fontSize: 11, color: justificacion.length >= 30 ? 'var(--green-accent)' : 'var(--text-muted)' }}>
-                {justificacion.length} / 30 mínimo
-              </span>
-            </div>
-            <div className="form-group" style={{ marginBottom: 16 }}>
-              <label>¿Tienes alguna lesión o condición física? (opcional)</label>
-              <textarea value={condicion} onChange={e => setCondicion(e.target.value)} placeholder="Ej: problema de rodilla izquierda..." />
-            </div>
-            <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, cursor: 'pointer', marginBottom: 20 }}>
-              <input type="checkbox" checked={aceptado} onChange={e => setAceptado(e.target.checked)} style={{ marginTop: 2 }} />
-              Entiendo que el admin debe aprobar mi rutina antes de poder usarla.
-            </label>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn btn--ghost" onClick={() => setPaso(1)}>← Atrás</button>
-              <button className="btn btn--primary" onClick={() => setPaso(3)} disabled={!validarPaso2()}>Siguiente →</button>
-            </div>
-          </div>
-        )}
+        {/* Botón guardar */}
+        <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+          <button
+            className="btn btn--primary"
+            onClick={guardar}
+            disabled={guardando || diasSel.length === 0}
+          >
+            {guardando ? 'Guardando...' : '💾 Guardar rutina'}
+          </button>
+          <button className="btn btn--ghost" onClick={() => setEditando(false)}>Cancelar</button>
+        </div>
+      </div>
+    )
+  }
 
-        {/* PASO 3 */}
-        {paso === 3 && (
-          <div>
-            <h3 style={{ marginBottom: 16 }}>Resumen de tu rutina</h3>
-            {diasSeleccionados.map(dia => (
-              <div key={dia} className="profile-section" style={{ marginBottom: 10 }}>
-                <strong>{dia}</strong> · {getEjs(dia).length} ejercicios
-                {getEjs(dia).map((ej, i) => (
-                  <div key={i} className="ej-row" style={{ marginTop: 6 }}>
-                    <span className="ej-row__dot" />
-                    <span className="ej-row__name">{ej.nombre}</span>
-                    <span className="ej-row__sets">{ej.series}x{ej.reps}</span>
+  // ── Render: Vista de la rutina ─────────────────────────────
+  return (
+    <div className="page">
+      <div className="page__header" style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
+        <div>
+          <h2 className="page__title">⭐ Mi Rutina</h2>
+          <p className="page__sub">Tu programa de entrenamiento personalizado</p>
+        </div>
+        <button className="btn btn--outline btn--sm" onClick={() => iniciarEditor(rutina)}>
+          {rutina?.dias?.length ? '✏️ Editar rutina' : '+ Crear rutina'}
+        </button>
+      </div>
+
+      {msgOk && <div className="toast-ok" style={{marginBottom:16}}>{msgOk}</div>}
+
+      {!rutina?.dias?.length ? (
+        <div className="card" style={{textAlign:'center',padding:'48px 24px'}}>
+          <p style={{fontSize:40,marginBottom:16}}>📋</p>
+          <h3 style={{marginBottom:8}}>Aún no tienes una rutina personalizada</h3>
+          <p style={{color:'var(--t500)',marginBottom:24,fontSize:14}}>
+            Crea tu propio programa de entrenamiento adaptado a tus objetivos y tiempo disponible.
+            Puedes modificarla cuantas veces quieras.
+          </p>
+          <button className="btn btn--primary" onClick={() => iniciarEditor(null)}>
+            + Crear mi rutina
+          </button>
+        </div>
+      ) : (
+        <>
+          <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:20,flexWrap:'wrap'}}>
+            <span className="tag tag--primary">{rutina.dias.length} días / semana</span>
+            <span style={{fontSize:12,color:'var(--t500)'}}>
+              {rutina.dias.reduce((a,d)=>a+(d.ejercicios?.length??0),0)} ejercicios en total
+            </span>
+          </div>
+
+          {rutina.dias.map(({ dia, ejercicios }) => (
+            <div key={dia} className="card" style={{marginBottom:14}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14,flexWrap:'wrap',gap:8}}>
+                <div>
+                  <h3 style={{fontSize:16,fontWeight:800}}>{dia}</h3>
+                  <span style={{fontSize:12,color:'var(--t500)'}}>{ejercicios.length} ejercicios</span>
+                </div>
+                <button
+                  className="btn btn--primary btn--sm"
+                  onClick={() => setSesion({
+                    dia,
+                    ejercicios: ejercicios.map(e => ({
+                      n: e.nombre,
+                      s: `${e.series}×${e.reps}`,
+                      descanso: '60 seg',
+                      descripcion: e.desc
+                    }))
+                  })}
+                >
+                  ▶ Entrenar
+                </button>
+              </div>
+              <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                {ejercicios.map((ej, i) => (
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'8px 12px',background:'var(--surface2)',borderRadius:'var(--r8)'}}>
+                    <span style={{fontWeight:800,color:'var(--g600)',minWidth:22,textAlign:'center',fontSize:13}}>{i+1}</span>
+                    <div style={{flex:1}}>
+                      <span style={{fontSize:13.5,fontWeight:700}}>{ej.nombre}</span>
+                    </div>
+                    <span style={{fontSize:12,color:'var(--t500)',whiteSpace:'nowrap'}}>{ej.series}×{ej.reps}</span>
                   </div>
                 ))}
               </div>
-            ))}
-            {error && <p style={{ color: 'var(--danger)', marginBottom: 10 }}>{error}</p>}
-            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <button className="btn btn--ghost" onClick={() => setPaso(2)}>← Atrás</button>
-              <button className="btn btn--primary" onClick={enviar} disabled={enviando}>
-                {enviando ? 'Enviando...' : '📤 Enviar al admin para revisión'}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // ── Vista 3: Solicitud existe ────────────────────────────────
-  if (solicitud) {
-    const estado = solicitud.estado
-
-    return (
-      <div className="page">
-        <div className="page__header">
-          <h2 className="page__title">Mi rutina personalizada</h2>
-        </div>
-
-        <div className="solicitud-card">
-          <span className={`solicitud-badge solicitud-badge--${estado}`}>
-            {estado === 'pendiente' ? '⏳ En revisión' : estado === 'aprobada' ? '✅ Rutina aprobada' : '❌ Solicitud rechazada'}
-          </span>
-
-          {estado === 'pendiente' && (
-            <>
-              <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 12 }}>
-                Tu rutina personalizada está siendo revisada por el administrador.
-              </p>
-              <button className="btn btn--ghost btn--sm" onClick={() => setDetalle(d => !d)}>
-                {detalle ? 'Ocultar' : 'Ver mi rutina enviada'}
-              </button>
-            </>
-          )}
-
-          {estado === 'aprobada' && (
-            <>
-              <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 12 }}>
-                Tu rutina ha sido aprobada. ¡Puedes comenzar!
-              </p>
-              <button className="btn btn--ghost btn--sm" onClick={() => setDetalle(d => !d)} style={{ marginBottom: 10 }}>
-                {detalle ? 'Ocultar' : 'Ver rutina'}
-              </button>
-            </>
-          )}
-
-          {estado === 'rechazada' && (
-            <>
-              {solicitud.comentarioAdmin && (
-                <div style={{ background: 'rgba(224,85,85,0.08)', border: '1px solid rgba(224,85,85,0.25)', borderRadius: 8, padding: '12px 14px', marginBottom: 12 }}>
-                  <p style={{ fontSize: 13, color: 'var(--danger)' }}>{solicitud.comentarioAdmin}</p>
-                </div>
-              )}
-              <button className="btn btn--primary" onClick={() => { setSolicitud(null); setCreando(true); setPaso(1) }}>
-                Crear nueva solicitud
-              </button>
-            </>
-          )}
-
-          {/* Detalle de la rutina */}
-          {detalle && solicitud.rutinaPropuesta?.map((diaData, i) => (
-            <div key={i} style={{ marginTop: 12 }}>
-              <strong style={{ fontSize: 14 }}>{diaData.dia}</strong>
-              {diaData.ejercicios.map((ej, j) => (
-                <div key={j} className="ej-row">
-                  <span className="ej-row__dot" />
-                  <span className="ej-row__name">{ej.nombre}</span>
-                  <span className="ej-row__sets">{ej.series}x{ej.reps}</span>
-                </div>
-              ))}
-              {estado === 'aprobada' && (
-                <button
-                  className="btn btn--primary btn--sm"
-                  style={{ marginTop: 8 }}
-                  onClick={() => setSesion({ dia: diaData.dia, ejercicios: diaData.ejercicios })}
-                >
-                  ▶ Comenzar {diaData.dia}
-                </button>
-              )}
             </div>
           ))}
-
-          {estado === 'aprobada' && (
-            <button className="btn btn--ghost btn--sm" style={{ marginTop: 16 }}
-              onClick={() => { setSolicitud(null); setCreando(true); setPaso(1) }}>
-              Solicitar cambios
-            </button>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  return null
+        </>
+      )}
+    </div>
+  )
 }

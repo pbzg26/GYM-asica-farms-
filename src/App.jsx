@@ -14,6 +14,8 @@ import Registro    from './pages/Registro'
 import Admin               from './pages/Admin'
 import RutinaPersonalizada from './pages/RutinaPersonalizada'
 import Cardio              from './pages/Cardio'
+import Reportes            from './pages/Reportes'
+import Dashboard           from './pages/Dashboard'
 import NotFound            from './pages/NotFound'
 
 // Ruta protegida — solo usuarios logueados
@@ -41,6 +43,7 @@ export default function App() {
         <Route path="/rutinas"   element={<Rutinas />} />
         <Route path="/perfil"    element={<Perfil />} />
         <Route path="/cardio"    element={<Cardio />} />
+        <Route path="/reportes"  element={<Reportes />} />
 
         {/* Coach solo para usuarios logueados */}
         <Route path="/coach" element={
@@ -55,6 +58,11 @@ export default function App() {
         {/* Admin */}
         <Route path="/admin" element={
           <RutaAdmin><Admin /></RutaAdmin>
+        } />
+
+        {/* Dashboard super admin */}
+        <Route path="/dashboard" element={
+          <RutaAdmin><Dashboard /></RutaAdmin>
         } />
       </Route>
 

@@ -17,10 +17,13 @@ function getDiaLabel() {
 }
 
 export default function Layout() {
-  const { usuario, perfil, esAdmin } = useAuth()
+  const { usuario, perfil, esAdmin, esSuperAdmin } = useAuth()
   const navigate  = useNavigate()
   const location  = useLocation()
   const [drawer, setDrawer] = useState(false)
+  const [colapsado, setColapsado] = useState(() => {
+    try { return localStorage.getItem('sidebar_colapsado') === '1' } catch { return false }
+  })
 
   // Cerrar drawer al navegar
   useEffect(() => { setDrawer(false) }, [location.pathname])
@@ -31,6 +34,17 @@ export default function Layout() {
     return () => { document.body.style.overflow = '' }
   }, [drawer])
 
+  // Persistir preferencia de sidebar colapsado
+  useEffect(() => {
+    try { localStorage.setItem('sidebar_colapsado', colapsado ? '1' : '0') } catch {}
+    document.documentElement.style.setProperty('--sw', colapsado ? '72px' : '260px')
+  }, [colapsado])
+
+  // Inicializar variable CSS al montar
+  useEffect(() => {
+    document.documentElement.style.setProperty('--sw', colapsado ? '72px' : '260px')
+  }, [])
+
   async function handleLogout() {
     await cerrarSesion()
     navigate('/')
@@ -38,8 +52,6 @@ export default function Layout() {
 
   const nc = ({ isActive }) => `nav-link${isActive ? ' nav-link--active' : ''}`
   const inicial = perfil?.nombre?.charAt(0)?.toUpperCase() ?? '?'
-
-  // Foto de perfil si existe
   const fotoUrl = perfil?.fotoUrl ?? null
 
   return (
@@ -54,7 +66,7 @@ export default function Layout() {
       )}
 
       {/* ── SIDEBAR ─────────────────────────────── */}
-      <aside className={`sidebar${drawer ? ' sidebar--open' : ''}`}>
+      <aside className={`sidebar${drawer ? ' sidebar--open' : ''}${colapsado ? ' sidebar--collapsed' : ''}`}>
 
         {/* Logo */}
         <div className="sidebar-logo">
@@ -64,16 +76,18 @@ export default function Layout() {
               alt="Asica Farms"
               onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }}
             />
-            <span style={{display:'none',alignItems:'center',justifyContent:'center',width:'100%',height:'100%',fontSize:'18px'}}>🌿</span>
+            <span style={{display:'none',alignItems:'center',justifyContent:'center',width:'100%',height:'100%',fontSize:'20px'}}>🌿</span>
           </div>
-          <div>
-            <span className="sidebar-logo__name">GYM ASICA FARMS</span>
-            <span className="sidebar-logo__sub">Olmos, Perú</span>
-          </div>
+          {!colapsado && (
+            <div>
+              <span className="sidebar-logo__name">GYM ASICA FARMS</span>
+              <span className="sidebar-logo__sub">Olmos, Perú</span>
+            </div>
+          )}
         </div>
 
-        {/* Usuario */}
-        {usuario && perfil && (
+        {/* Usuario — solo si no colapsado */}
+        {usuario && perfil && !colapsado && (
           <div className="sidebar-user">
             <div className="sidebar-user__av" style={fotoUrl ? {padding:0,overflow:'hidden'} : {}}>
               {fotoUrl
@@ -93,56 +107,78 @@ export default function Layout() {
 
         {/* Nav */}
         <nav className="sidebar-nav">
-          <span className="sidebar-nav__label">Principal</span>
-          <NavLink to="/" className={nc} end>
-            <span className="nav-icon">🏠</span>Inicio
+          {!colapsado && <span className="sidebar-nav__label">Principal</span>}
+          <NavLink to="/" className={nc} end title="Inicio">
+            <span className="nav-icon">🏠</span>
+            <span className="nav-text">Inicio</span>
           </NavLink>
-          <NavLink to="/guia" className={nc}>
-            <span className="nav-icon">💡</span>Guía
+          <NavLink to="/guia" className={nc} title="Guía">
+            <span className="nav-icon">💡</span>
+            <span className="nav-text">Guía</span>
           </NavLink>
-          <NavLink to="/maquinas" className={nc}>
-            <span className="nav-icon">🏋️</span>Máquinas
+          <NavLink to="/maquinas" className={nc} title="Máquinas">
+            <span className="nav-icon">🏋️</span>
+            <span className="nav-text">Máquinas</span>
           </NavLink>
-          <NavLink to="/rutinas" className={nc}>
-            <span className="nav-icon">📅</span>Rutinas
-            {getDiaLabel() !== 'Dom' && <span className="nav-pill">HOY</span>}
+          <NavLink to="/rutinas" className={nc} title="Rutinas">
+            <span className="nav-icon">📅</span>
+            <span className="nav-text">Rutinas</span>
+            {!colapsado && getDiaLabel() !== 'Dom' && <span className="nav-pill">HOY</span>}
           </NavLink>
-          <NavLink to="/cardio" className={nc}>
-            <span className="nav-icon">🏃</span>Cardio
+          <NavLink to="/cardio" className={nc} title="Cardio">
+            <span className="nav-icon">🏃</span>
+            <span className="nav-text">Cardio</span>
+          </NavLink>
+          <NavLink to="/reportes" className={nc} title="Reportes">
+            <span className="nav-icon">📢</span>
+            <span className="nav-text">Reportes</span>
           </NavLink>
 
-          <span className="sidebar-nav__label">Personal</span>
-          <NavLink to="/perfil" className={nc}>
-            <span className="nav-icon">👤</span>Mi Perfil
+          {!colapsado && <span className="sidebar-nav__label">Personal</span>}
+          {colapsado && <div style={{height:8}} />}
+          <NavLink to="/perfil" className={nc} title="Mi Perfil">
+            <span className="nav-icon">👤</span>
+            <span className="nav-text">Mi Perfil</span>
           </NavLink>
 
           {usuario ? (
-            <NavLink to="/coach" className={nc}>
-              <span className="nav-icon">🤖</span>Coach IA
+            <NavLink to="/coach" className={nc} title="Coach IA">
+              <span className="nav-icon">🤖</span>
+              <span className="nav-text">Coach IA</span>
             </NavLink>
           ) : (
             <button
               className="nav-link nav-link--muted"
               onClick={() => navigate('/login')}
+              title="Coach IA"
             >
               <span className="nav-icon">🤖</span>
-              Coach IA
-              <span className="nav-pill" style={{background:'rgba(255,255,255,.08)',color:'rgba(255,255,255,.5)'}}>Login</span>
+              <span className="nav-text">Coach IA</span>
+              {!colapsado && <span className="nav-pill" style={{background:'rgba(255,255,255,.08)',color:'rgba(255,255,255,.5)'}}>Login</span>}
             </button>
           )}
 
           {usuario && (
-            <NavLink to="/rutina-personalizada" className={nc}>
-              <span className="nav-icon">⭐</span>Mi Rutina
+            <NavLink to="/rutina-personalizada" className={nc} title="Mi Rutina">
+              <span className="nav-icon">⭐</span>
+              <span className="nav-text">Mi Rutina</span>
             </NavLink>
           )}
 
           {esAdmin && (
             <>
-              <span className="sidebar-nav__label">Admin</span>
-              <NavLink to="/admin" className={nc}>
-                <span className="nav-icon">⚙️</span>Panel Admin
+              {!colapsado && <span className="sidebar-nav__label">Admin</span>}
+              {colapsado && <div style={{height:8}} />}
+              <NavLink to="/admin" className={nc} title="Panel Admin">
+                <span className="nav-icon">⚙️</span>
+                <span className="nav-text">Panel Admin</span>
               </NavLink>
+              {esSuperAdmin && (
+                <NavLink to="/dashboard" className={nc} title="Dashboard">
+                  <span className="nav-icon">📊</span>
+                  <span className="nav-text">Dashboard</span>
+                </NavLink>
+              )}
             </>
           )}
         </nav>
@@ -150,15 +186,16 @@ export default function Layout() {
         {/* Foot */}
         <div className="sidebar-foot">
           {usuario ? (
-            <button className="sidebar-logout" onClick={handleLogout}>
-              <span>🚪</span>Cerrar sesión
+            <button className="sidebar-logout" onClick={handleLogout} title="Cerrar sesión">
+              <span>🚪</span>
+              <span className="nav-text">Cerrar sesión</span>
             </button>
           ) : (
             <button
               className="sidebar-login-cta"
               onClick={() => navigate('/login')}
             >
-              Iniciar sesión
+              {colapsado ? '→' : 'Iniciar sesión'}
             </button>
           )}
         </div>
@@ -177,6 +214,16 @@ export default function Layout() {
             <span style={drawer ? {transform:'rotate(45deg) translate(5px,5px)'} : {}} />
             <span style={{opacity: drawer ? 0 : 1}} />
             <span style={drawer ? {transform:'rotate(-45deg) translate(5px,-5px)'} : {}} />
+          </button>
+
+          {/* Toggle sidebar — solo desktop */}
+          <button
+            className="topbar__collapse-btn"
+            onClick={() => setColapsado(v => !v)}
+            aria-label={colapsado ? 'Expandir menú' : 'Colapsar menú'}
+            title={colapsado ? 'Expandir menú' : 'Colapsar menú'}
+          >
+            {colapsado ? '▶' : '◀'}
           </button>
 
           <span className="topbar__title">

@@ -155,6 +155,14 @@ export async function eliminarEjercicio(maquinaId, ejercicioId) {
   await deleteDoc(doc(db, 'maquinas', maquinaId, 'ejercicios', ejercicioId))
 }
 
+export async function eliminarMaquina(maquinaId) {
+  // Eliminar todos los ejercicios primero
+  const snap = await getDocs(collection(db, 'maquinas', maquinaId, 'ejercicios'))
+  const dels = snap.docs.map(d => deleteDoc(d.ref))
+  await Promise.all(dels)
+  await deleteDoc(doc(db, 'maquinas', maquinaId))
+}
+
 // Rutinas
 export async function guardarMetaRutina(grupo, datos) {
   await setDoc(doc(db, 'rutinas', grupo), datos, { merge: true })
@@ -252,7 +260,21 @@ export async function obtenerHistorialCardio(uid, limite = 20) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }))
 }
 
-// ── Solicitudes rutina personalizada ──────────────────────────
+// ── Rutina personal (sin aprobación) ──────────────────────────
+
+export async function guardarMiRutina(uid, rutina) {
+  await setDoc(doc(db, 'usuarios', uid, 'miRutina', 'actual'), {
+    ...rutina,
+    actualizadaEn: serverTimestamp()
+  })
+}
+
+export async function obtenerMiRutina(uid) {
+  const snap = await getDoc(doc(db, 'usuarios', uid, 'miRutina', 'actual'))
+  return snap.exists() ? snap.data() : null
+}
+
+// ── Solicitudes rutina personalizada (legacy) ─────────────────
 
 export async function enviarSolicitudRutina(uid, { nombreUsuario, grupo, rutinaPropuesta, justificacion, condicionFisica }) {
   await addDoc(collection(db, 'solicitudesRutina'), {
@@ -397,3 +419,87 @@ export async function migrarDatosAFirestore(MAQUINAS, RUTINAS, CONTENIDO_EDUCATI
     }
   }
 }
+
+// ── Reportes / Quejas ─────────────────────────────────────────
+
+export async function crearReporte(uid, { nombreUsuario, titulo, descripcion, categoria, equipoId, fotoBase64 }) {
+  return await addDoc(collection(db, 'reportes'), {
+    uid, nombreUsuario, titulo, descripcion, categoria,
+    equipoId: equipoId ?? null,
+    fotoBase64: fotoBase64 ?? null,
+    estado: 'abierto',
+    fechaReporte: serverTimestamp(),
+    adminUid: null,
+    eraReal: null,
+    descripcionSolucion: null,
+    queSeNecesito: null,
+    fechaRevision: null,
+  })
+}
+
+export async function obtenerMisReportes(uid) {
+  const q = query(collection(db, 'reportes'), where('uid','==',uid), orderBy('fechaReporte','desc'), limit(30))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+export async function obtenerTodosReportes() {
+  const q = query(collection(db, 'reportes'), orderBy('fechaReporte','desc'), limit(100))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+export async function resolverReporte(reporteId, resolucion) {
+  await updateDoc(doc(db, 'reportes', reporteId), {
+    ...resolucion,
+    fechaRevision: serverTimestamp(),
+  })
+}
+
+// ── Dashboard / Métricas ──────────────────────────────────────
+
+export async function obtenerResumenUsuarios() {
+  const usersSnap = await getDocs(collection(db, 'usuarios'))
+  const usuarios = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+
+  const ahora = new Date()
+  const hace7dias = new Date(ahora - 7*24*60*60*1000)
+  const hace30dias = new Date(ahora - 30*24*60*60*1000)
+
+  const resumen = await Promise.all(usuarios.map(async u => {
+    const histQ = query(
+      collection(db, 'usuarios', u.id, 'historialRutinas'),
+      orderBy('completadoEn','desc'), limit(10)
+    )
+    const histSnap = await getDocs(histQ)
+    const hist = histSnap.docs.map(d => ({ ...d.data() }))
+    const ultimo = hist[0]?.completadoEn?.toDate?.() ?? null
+    const rutinasUltimos30 = hist.filter(h => {
+      const f = h.completadoEn?.toDate?.()
+      return f && f > hace30dias
+    }).length
+    const activoEstaSemana = ultimo && ultimo > hace7dias
+
+    const saludQ = query(collection(db,'usuarios',u.id,'registrosSalud'),orderBy('fecha','desc'),limit(1))
+    const saludSnap = await getDocs(saludQ)
+    const ultimaSalud = saludSnap.docs[0]?.data() ?? null
+
+    return {
+      uid: u.id,
+      nombre: u.nombre ?? '—',
+      correo: u.correo ?? '',
+      grupo: u.grupo ?? '—',
+      rol: u.rol ?? 'usuario',
+      peso: u.peso ?? null,
+      altura: u.altura ?? null,
+      ultimoEntreno: ultimo,
+      rutinasUltimos30,
+      activoEstaSemana,
+      imc: ultimaSalud?.imc ?? null,
+      condiciones: ultimaSalud?.condiciones ?? [],
+    }
+  }))
+
+  return resumen
+}
+

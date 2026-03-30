@@ -10,7 +10,8 @@ import {
   guardarArticuloGuia,
   migrarDatosAFirestore,
   obtenerTodasSolicitudes, responderSolicitud,
-  crearAviso, obtenerTodosAvisos, desactivarAviso
+  crearAviso, obtenerTodosAvisos, desactivarAviso,
+  obtenerTodosReportes, resolverReporte
 } from '../services/dbService'
 import { useGymData } from '../hooks/useGymData'
 import { useAuth } from '../context/AuthContext'
@@ -937,6 +938,7 @@ export default function Admin() {
     { id: 'guia',        label: 'Guía' },
     { id: 'solicitudes', label: `Solicitudes${nPendientes > 0 ? ` (${nPendientes})` : ''}` },
     { id: 'avisos',      label: '📢 Avisos' },
+    { id: 'reportes',    label: '🔧 Reportes' },
     ...(esSuperAdmin ? [{ id: 'editor', label: '⭐ Editor' }] : []),
   ]
 
@@ -990,25 +992,160 @@ export default function Admin() {
       {tabActiva === 'guia'        && <TabGuia />}
       {tabActiva === 'solicitudes' && <TabSolicitudes />}
       {tabActiva === 'avisos'      && <TabAvisos />}
+      {tabActiva === 'reportes'    && <TabReportesAdmin key="reportes-tab" />}
       {tabActiva === 'editor'      && esSuperAdmin && (
         <div>
           <div className="page__header">
             <h3 className="page__title" style={{fontSize:18}}>Editor de Página</h3>
-            <p className="page__sub">Edita directamente el contenido del gym desde aquí. Usa el tab Máquinas para editar ejercicios y el tab Guía para editar artículos.</p>
+            <p className="page__sub">Edita directamente el contenido del gym. Ve a la página de Máquinas y activa el Modo Editor para editar ejercicios inline.</p>
           </div>
           <div style={{display:'flex',flexDirection:'column',gap:16}}>
             <div className="form-card">
-              <h4 style={{fontWeight:800,marginBottom:8}}>⚙️ Permisos de Super Admin</h4>
-              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Como Super Admin tienes acceso completo: puedes editar ejercicios (tab Máquinas), rutinas (tab Rutinas), artículos (tab Guía), y publicar avisos (tab Avisos). También puedes asignar el rol de Super Admin a otros usuarios desde el tab Usuarios.</p>
+              <h4 style={{fontWeight:800,marginBottom:8}}>✏️ Cómo editar ejercicios</h4>
+              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Ve a la sección <strong>Máquinas</strong> → botón <strong>"✏️ Modo editor"</strong> → haz clic en cualquier máquina para editarla. Desde ahí puedes cambiar nombre, imágenes, descripción, series, y videos de YouTube.</p>
             </div>
             <div className="form-card">
-              <h4 style={{fontWeight:800,marginBottom:8}}>📸 Imágenes de ejercicios</h4>
-              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Para editar las fotos de un ejercicio: ve al tab Máquinas → selecciona la máquina → edita el ejercicio → en el campo "Fotos (URLs)" ingresa las URLs de Unsplash separadas por coma.</p>
-              <p style={{fontSize:12,color:'var(--t600)',marginTop:8}}>Formato: https://images.unsplash.com/photo-{'{ID}'}?w=600&q=75&auto=format</p>
+              <h4 style={{fontWeight:800,marginBottom:8}}>📸 URLs de imágenes</h4>
+              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Usa URLs de Unsplash para las fotos de ejercicios.</p>
+              <p style={{fontSize:12,color:'var(--t600)',marginTop:8,fontFamily:'monospace'}}>https://images.unsplash.com/photo-ID?w=600&q=75&auto=format</p>
             </div>
           </div>
         </div>
       )}
     </div>
+  )
+}
+
+// ── Tab Reportes en Admin ─────────────────────────────────────
+const ESTADO_REPORTE = {
+  abierto:         { color:'#c0392b', label:'🔴 Abierto' },
+  en_revision:     { color:'#92600a', label:'🟡 En revisión' },
+  resuelto:        { color:'#2e7d32', label:'🟢 Resuelto' },
+  requiere_compra: { color:'#1565c0', label:'🔵 Requiere compra' },
+  no_procedente:   { color:'#555',    label:'⚫ No procedente' },
+}
+
+function TabReportesAdmin() {
+  const [reportes, setReportes] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [activo, setActivo] = useState(null)
+  const [res, setRes] = useState({ eraReal: null, descripcionSolucion:'', queSeNecesito:'' })
+  const [guardando, setGuardando] = useState(false)
+
+  useEffect(() => { cargar() }, [])
+
+  async function cargar() {
+    setCargando(true)
+    try { setReportes(await obtenerTodosReportes()) } catch {}
+    setCargando(false)
+  }
+
+  async function cambiarEstado(reporte, nuevoEstado) {
+    setGuardando(true)
+    try {
+      await resolverReporte(reporte.id, { estado: nuevoEstado, ...res })
+      await cargar()
+      setActivo(null)
+      setRes({ eraReal: null, descripcionSolucion:'', queSeNecesito:'' })
+    } catch (e) { alert('Error: ' + e.message) }
+    setGuardando(false)
+  }
+
+  if (cargando) return <div style={{textAlign:'center',padding:'32px',color:'var(--t500)'}}>Cargando reportes...</div>
+
+  if (activo) {
+    const r = activo
+    const est = ESTADO_REPORTE[r.estado]
+    return (
+      <div>
+        <button className="back-btn" onClick={() => setActivo(null)}>← Volver</button>
+        <div className="card" style={{marginTop:16}}>
+          <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:12,marginBottom:12}}>
+            <div>
+              <span style={{fontSize:11,fontWeight:700,color:'var(--t500)',textTransform:'uppercase'}}>{r.categoria}</span>
+              <h3 style={{fontSize:15,fontWeight:800,marginTop:4}}>{r.titulo}</h3>
+              <p style={{fontSize:12,color:'var(--t500)'}}>De: {r.nombreUsuario} · {r.fechaReporte?.toDate?.()?.toLocaleDateString('es-PE')}</p>
+            </div>
+            <span style={{color:est?.color,fontSize:13,fontWeight:700}}>{est?.label}</span>
+          </div>
+          <p style={{fontSize:13.5,lineHeight:1.6,marginBottom:12}}>{r.descripcion}</p>
+          {r.fotoBase64 && <img src={r.fotoBase64} alt="evidencia" style={{maxWidth:'100%',maxHeight:220,borderRadius:'var(--r12)',objectFit:'cover',marginBottom:12}} />}
+
+          {(r.estado === 'abierto' || r.estado === 'en_revision') && (
+            <div style={{borderTop:'1px solid var(--bd)',paddingTop:16,marginTop:8}}>
+              <h4 style={{fontSize:14,fontWeight:800,marginBottom:12}}>Proceso de resolución</h4>
+              {r.estado === 'abierto' && (
+                <button className="btn btn--outline btn--sm" style={{marginBottom:16}} onClick={() => cambiarEstado(r,'en_revision')} disabled={guardando}>👁️ Marcar "En revisión"</button>
+              )}
+              <div style={{marginBottom:12}}>
+                <p style={{fontSize:13,fontWeight:700,marginBottom:8}}>¿Era real el problema al revisarlo?</p>
+                <div style={{display:'flex',gap:8}}>
+                  <button className={`btn btn--sm ${res.eraReal===true?'btn--primary':'btn--outline'}`} onClick={() => setRes(p=>({...p,eraReal:true}))}>Sí, confirmado</button>
+                  <button className={`btn btn--sm ${res.eraReal===false?'btn--primary':'btn--outline'}`} onClick={() => setRes(p=>({...p,eraReal:false}))}>No procedente</button>
+                </div>
+              </div>
+              {res.eraReal === false && (
+                <div className="form-group">
+                  <label className="form-label">Motivo</label>
+                  <input className="form-input" value={res.descripcionSolucion} onChange={e=>setRes(p=>({...p,descripcionSolucion:e.target.value}))} placeholder="No se encontró el problema..." />
+                  <button className="btn btn--primary btn--sm" style={{marginTop:10}} onClick={() => cambiarEstado(r,'no_procedente')} disabled={guardando}>Cerrar como no procedente</button>
+                </div>
+              )}
+              {res.eraReal === true && (
+                <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                  <div className="form-group">
+                    <label className="form-label">¿Cómo lo solucionaste? (dejar vacío si no está resuelto)</label>
+                    <textarea className="form-input" rows={2} value={res.descripcionSolucion} onChange={e=>setRes(p=>({...p,descripcionSolucion:e.target.value}))} placeholder="Se reparó el agarre..." />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">¿Qué se necesitó o se necesita?</label>
+                    <input className="form-input" value={res.queSeNecesito} onChange={e=>setRes(p=>({...p,queSeNecesito:e.target.value}))} placeholder="Tornillos M8, técnico de mantenimiento..." />
+                  </div>
+                  <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                    <button className="btn btn--primary btn--sm" onClick={() => cambiarEstado(r,'resuelto')} disabled={guardando}>✅ Resuelto</button>
+                    <button className="btn btn--outline btn--sm" onClick={() => cambiarEstado(r,'requiere_compra')} disabled={guardando}>🛒 Requiere compra/gestión</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  const pendientes = reportes.filter(r => r.estado === 'abierto' || r.estado === 'en_revision')
+  const historico  = reportes.filter(r => r.estado !== 'abierto' && r.estado !== 'en_revision')
+
+  return (
+    <div>
+      {reportes.length === 0 && <p style={{color:'var(--t500)',textAlign:'center',padding:'32px 0'}}>Sin reportes todavía</p>}
+      {pendientes.length > 0 && (
+        <div style={{marginBottom:20}}>
+          <h4 style={{fontSize:12,fontWeight:800,color:'var(--err)',textTransform:'uppercase',letterSpacing:.5,marginBottom:10}}>Pendientes ({pendientes.length})</h4>
+          {pendientes.map(r => <ReporteRow key={r.id} r={r} onClick={() => setActivo(r)} />)}
+        </div>
+      )}
+      {historico.length > 0 && (
+        <div>
+          <h4 style={{fontSize:12,fontWeight:800,color:'var(--t500)',textTransform:'uppercase',letterSpacing:.5,marginBottom:10}}>Historial ({historico.length})</h4>
+          {historico.map(r => <ReporteRow key={r.id} r={r} onClick={() => setActivo(r)} />)}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ReporteRow({ r, onClick }) {
+  const e = ESTADO_REPORTE[r.estado] ?? ESTADO_REPORTE.abierto
+  return (
+    <button className="exercise-row" style={{width:'100%',textAlign:'left',marginBottom:8}} onClick={onClick}>
+      <div className="exercise-row__info" style={{flex:1}}>
+        <h4 style={{fontSize:13.5}}>{r.titulo}</h4>
+        <p style={{fontSize:12,color:'var(--t500)',marginTop:2}}>{r.nombreUsuario} · {r.fechaReporte?.toDate?.()?.toLocaleDateString('es-PE')}</p>
+      </div>
+      <span style={{color:e.color,fontSize:12,fontWeight:700,flexShrink:0,marginRight:8}}>{e.label}</span>
+      <span className="exercise-row__arrow">›</span>
+    </button>
   )
 }

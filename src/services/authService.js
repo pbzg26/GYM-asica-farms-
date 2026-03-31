@@ -4,7 +4,7 @@ import {
   signOut,
   updateProfile
 } from 'firebase/auth'
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, setDoc, getDoc, getDocs, collection, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from './firebase'
 
 // Grupos disponibles para rotación automática A-E
@@ -12,10 +12,8 @@ const GRUPOS = ['A', 'B', 'C', 'D', 'E']
 
 // Asigna grupo automáticamente según cantidad de usuarios existentes
 async function asignarGrupo() {
-  const { getDocs, collection } = await import('firebase/firestore')
   const snap = await getDocs(collection(db, 'usuarios'))
-  const totalUsuarios = snap.size
-  return GRUPOS[totalUsuarios % GRUPOS.length]
+  return GRUPOS[snap.size % GRUPOS.length]
 }
 
 // ── Registro ─────────────────────────────────────────────────
@@ -46,12 +44,12 @@ export async function registrarUsuario({ nombre, correo, contrasena }) {
 // ── Login ─────────────────────────────────────────────────────
 export async function iniciarSesion({ correo, contrasena }) {
   const cred = await signInWithEmailAndPassword(auth, correo, contrasena)
-  // Actualizar última conexión
-  await setDoc(
+  // Actualizar última conexión — fire-and-forget, no bloqueamos el login
+  setDoc(
     doc(db, 'usuarios', cred.user.uid),
     { ultimaConexion: serverTimestamp() },
     { merge: true }
-  )
+  ).catch(() => {})
   return cred.user
 }
 

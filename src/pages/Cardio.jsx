@@ -125,9 +125,11 @@ export default function Cardio() {
   const [guardadoCMS,  setGuardadoCMS]  = useState(false)
 
   useEffect(() => {
-    obtenerContenidoApp('cardio').then(data => {
-      if (data) setContenido({ ...DEFAULT_CONTENIDO, ...data })
-    })
+    obtenerContenidoApp('cardio')
+      .then(data => {
+        if (data) setContenido({ ...DEFAULT_CONTENIDO, ...data })
+      })
+      .catch(() => {})
   }, [])
 
   function activarEditor() {

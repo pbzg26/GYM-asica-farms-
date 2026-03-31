@@ -32,11 +32,13 @@ export default function Inicio() {
   const [editCardsG, setEditCardsG] = useState(null)
 
   useEffect(() => {
-    obtenerContenidoApp('inicio').then(data => {
-      if (!data) return
-      if (data.hero)        setHero(data.hero)
-      if (data.cardsGuest)  setCardsG(data.cardsGuest)
-    })
+    obtenerContenidoApp('inicio')
+      .then(data => {
+        if (!data) return
+        if (data.hero)        setHero(data.hero)
+        if (data.cardsGuest)  setCardsG(data.cardsGuest)
+      })
+      .catch(() => {})
   }, [])
 
   function activarEditor() {

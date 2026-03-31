@@ -17,8 +17,8 @@ service cloud.firestore {
 
     // ── Usuarios ─────────────────────────────────────────────────
     match /usuarios/{uid} {
-      // El propio usuario puede leer/crear/editar su doc
-      allow read:   if isOwner(uid) || isAdmin();
+      // Cualquier usuario autenticado puede leer perfiles (necesario para admin panel)
+      allow read:   if isAuth();
       allow create: if isOwner(uid);
       allow update: if isOwner(uid) || isAdmin();
       allow delete: if isAdmin();

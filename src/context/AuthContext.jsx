@@ -14,13 +14,24 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async (user) => {
       setUsuario(user)
       if (user) {
-        try {
-          const p = await obtenerPerfil(user.uid)
-          setPerfil(p)
-        } catch (err) {
-          console.error('Error cargando perfil:', err)
-          setPerfil(null)
+        // Forzar que el token esté listo en el SDK de Firestore antes de leer
+        try { await user.getIdToken(true) } catch {}
+
+        // Intentar cargar perfil — retry una vez si falla por permisos
+        let p = null
+        for (let intento = 0; intento < 2; intento++) {
+          try {
+            p = await obtenerPerfil(user.uid)
+            break
+          } catch (err) {
+            if (intento === 0) {
+              await new Promise(r => setTimeout(r, 800))
+            } else {
+              console.error('Error cargando perfil:', err)
+            }
+          }
         }
+        setPerfil(p)
       } else {
         setPerfil(null)
       }

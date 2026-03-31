@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useGymData } from '../hooks/useGymData'
-import { marcarRutinaCompletada } from '../services/dbService'
+import { marcarRutinaCompletada, guardarDiaRutina } from '../services/dbService'
 import { RUTINAS_FEMENINAS } from '../data/gymData'
 import WorkoutSession from '../components/ui/WorkoutSession'
 
@@ -41,15 +41,82 @@ function getDiaActual() {
   return dias[new Date().getDay()]
 }
 
+// ── Fila de ejercicio editable ───────────────────────────────
+function EjRow({ ej, index, modoEdicion, onEdit }) {
+  const [editando, setEditando] = useState(false)
+  const [localN,   setLocalN]   = useState(ej.n)
+  const [localS,   setLocalS]   = useState(ej.s)
+
+  function confirmar() {
+    onEdit(index, { n: localN, s: localS })
+    setEditando(false)
+  }
+
+  function cancelar() {
+    setLocalN(ej.n)
+    setLocalS(ej.s)
+    setEditando(false)
+  }
+
+  if (modoEdicion && editando) {
+    return (
+      <div className="ej-row ej-row--editing">
+        <div className="ej-row__edit-inputs">
+          <input value={localN} onChange={e => setLocalN(e.target.value)} placeholder="Ejercicio" autoFocus />
+          <input value={localS} onChange={e => setLocalS(e.target.value)} placeholder="Series" />
+        </div>
+        <button className="ej-row__edit-btn" onClick={confirmar} title="Confirmar">✓</button>
+        <button className="ej-row__edit-btn" onClick={cancelar}  title="Cancelar">✕</button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="ej-row">
+      <span className="ej-row__dot" />
+      <span className="ej-row__name">{ej.n}</span>
+      <span className="ej-row__sets">{ej.s}</span>
+      {modoEdicion && (
+        <button className="ej-row__edit-btn" onClick={() => setEditando(true)} title="Editar">✏️</button>
+      )}
+    </div>
+  )
+}
+
 // ── Acordeón de días compartido ────────────────────────────────
-function ListaDias({ dias, diaHoy, grupoLabel, usuario, marcando, completados, onIniciar, onMarcar }) {
+function ListaDias({
+  dias, diaHoy, grupoLabel, usuario, marcando, completados,
+  onIniciar, onMarcar,
+  modoEdicion, esAdmin, grupoActivo
+}) {
   const [diaAbierto,  setDiaAbierto]  = useState(diaHoy)
   const [modoSabado,  setModoSabado]  = useState(null)
+  const [localDias,   setLocalDias]   = useState(() => dias.map(d => ({ ...d, ejercicios: [...(d.ejercicios || [])] })))
+  const [guardando,   setGuardando]   = useState(null) // día que se está guardando
+  const [guardadoOk,  setGuardadoOk]  = useState(null)
   const fraseDia = FRASES_DESCANSO[Math.floor(Math.random() * FRASES_DESCANSO.length)]
+
+  function editEjercicio(diaKey, ejIndex, datos) {
+    setLocalDias(prev => prev.map(d => {
+      if (d.dia !== diaKey) return d
+      const nuevosEjs = d.ejercicios.map((e, i) => i === ejIndex ? { ...e, ...datos } : e)
+      return { ...d, ejercicios: nuevosEjs }
+    }))
+  }
+
+  async function guardarDia(diaInfo) {
+    setGuardando(diaInfo.dia)
+    try {
+      await guardarDiaRutina(grupoActivo, diaInfo.dia, { ...diaInfo })
+      setGuardadoOk(diaInfo.dia)
+      setTimeout(() => setGuardadoOk(null), 3000)
+    } catch (e) { console.error(e) }
+    setGuardando(null)
+  }
 
   return (
     <div className="days-list">
-      {dias.map((diaInfo) => {
+      {localDias.map((diaInfo) => {
         const esHoy       = diaInfo.dia === diaHoy
         const estaAbierto = diaAbierto === diaInfo.dia
         const yaHecho     = completados[diaInfo.dia]
@@ -134,15 +201,34 @@ function ListaDias({ dias, diaHoy, grupoLabel, usuario, marcando, completados, o
                         ← Cambiar opción
                       </button>
                     )}
+
                     {diaInfo.ejercicios.map((ej, i) => (
-                      <div key={i} className="ej-row">
-                        <span className="ej-row__dot" />
-                        <span className="ej-row__name">{ej.n}</span>
-                        <span className="ej-row__sets">{ej.s}</span>
-                      </div>
+                      <EjRow
+                        key={i}
+                        ej={ej}
+                        index={i}
+                        modoEdicion={modoEdicion}
+                        onEdit={(idx, datos) => editEjercicio(diaInfo.dia, idx, datos)}
+                      />
                     ))}
 
-                    {usuario && !yaHecho && diaInfo.ejercicios?.length > 0 && (
+                    {/* Botón guardar día (solo editor) */}
+                    {modoEdicion && esAdmin && diaInfo.ejercicios?.length > 0 && (
+                      <div className="ej-save-group">
+                        {guardadoOk === diaInfo.dia && (
+                          <div className="toast-ok" style={{marginBottom:8}}>✓ Guardado correctamente</div>
+                        )}
+                        <button
+                          className="btn btn--primary btn--sm"
+                          onClick={() => guardarDia(diaInfo)}
+                          disabled={guardando === diaInfo.dia}
+                        >
+                          {guardando === diaInfo.dia ? '⏳ Guardando...' : '💾 Guardar ' + diaInfo.dia}
+                        </button>
+                      </div>
+                    )}
+
+                    {!modoEdicion && usuario && !yaHecho && diaInfo.ejercicios?.length > 0 && (
                       <button
                         className="btn btn--primary btn--full"
                         style={{ marginTop: 12 }}
@@ -153,13 +239,13 @@ function ListaDias({ dias, diaHoy, grupoLabel, usuario, marcando, completados, o
                       </button>
                     )}
 
-                    {yaHecho && (
+                    {!modoEdicion && yaHecho && (
                       <p style={{ color: 'var(--green-accent)', fontSize: 14, marginTop: 10 }}>
                         ✓ Completado hoy
                       </p>
                     )}
 
-                    {!usuario && (
+                    {!modoEdicion && !usuario && (
                       <p className="day-card__login-hint">
                         <a href="/login">Inicia sesión</a> para guardar tu progreso
                       </p>
@@ -177,7 +263,7 @@ function ListaDias({ dias, diaHoy, grupoLabel, usuario, marcando, completados, o
 
 // ── Página principal ──────────────────────────────────────────
 export default function Rutinas() {
-  const { usuario, perfil } = useAuth()
+  const { usuario, perfil, esAdmin } = useAuth()
   const { rutinas: RUTINAS } = useGymData()
   const navigate = useNavigate()
 
@@ -186,6 +272,7 @@ export default function Rutinas() {
   const [marcando,    setMarcando]    = useState(false)
   const [completados, setCompletados] = useState({})
   const [sesionActiva,setSesionActiva]= useState(null)
+  const [modoEdicion, setModoEdicion] = useState(false)
 
   // Zona Fit
   const [modoZonaFit,  setModoZonaFit]  = useState(false)
@@ -238,10 +325,26 @@ export default function Rutinas() {
 
   return (
     <div className="page">
-      <div className="page__header">
-        <h2 className="page__title">Rutinas Semanales</h2>
-        <p className="page__sub">5 grupos diferentes · 7 días · Sin saturar el gym</p>
+      <div className="page__header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:12}}>
+        <div>
+          <h2 className="page__title">Rutinas Semanales</h2>
+          <p className="page__sub">5 grupos diferentes · 7 días · Sin saturar el gym</p>
+        </div>
+        {esAdmin && (
+          <button
+            className={`btn btn--sm ${modoEdicion ? 'btn--primary' : 'btn--ghost'}`}
+            onClick={() => setModoEdicion(m => !m)}
+          >
+            {modoEdicion ? '✓ Salir del editor' : '✏️ Modo editor'}
+          </button>
+        )}
       </div>
+
+      {modoEdicion && (
+        <div className="editor-banner">
+          ✏️ Modo editor activo — abre un día, edita ejercicios con ✏️ y guarda cada día con 💾
+        </div>
+      )}
 
       {/* Toggle Zona Fit */}
       <div className="zona-fit-toggle">
@@ -294,6 +397,9 @@ export default function Rutinas() {
             completados={completados}
             onIniciar={iniciarSesion}
             onMarcar={marcar}
+            modoEdicion={modoEdicion}
+            esAdmin={esAdmin}
+            grupoActivo={`zonafit-${tipoFem}`}
           />
         </>
 
@@ -321,7 +427,7 @@ export default function Rutinas() {
           </div>
 
           {/* Botón rutina personalizada */}
-          {usuario && (
+          {usuario && !modoEdicion && (
             <div style={{ marginBottom: 12 }}>
               <button className="btn btn--ghost btn--sm" onClick={() => navigate('/rutina-personalizada')}>
                 ⭐ Mi rutina personalizada
@@ -332,6 +438,7 @@ export default function Rutinas() {
           <h3 className="rutina-nombre">{RUTINAS[grupoActivo]?.nombre}</h3>
 
           <ListaDias
+            key={grupoActivo}
             dias={RUTINAS[grupoActivo]?.dias ?? []}
             diaHoy={diaHoy}
             grupoLabel={`Grupo ${grupoActivo}`}
@@ -340,6 +447,9 @@ export default function Rutinas() {
             completados={completados}
             onIniciar={iniciarSesion}
             onMarcar={marcar}
+            modoEdicion={modoEdicion}
+            esAdmin={esAdmin}
+            grupoActivo={grupoActivo}
           />
         </>
       )}

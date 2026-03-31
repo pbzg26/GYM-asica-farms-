@@ -1439,6 +1439,90 @@ input,select,textarea{font-family:var(--font);}
 .chip--active{background:var(--g700);border-color:var(--g700);color:#fff;}
 .chip--sec.chip--active{background:var(--g500);border-color:var(--g500);}
 
+/* ── Inicializar datos (migrate box) ─────────────────────────── */
+.migrate-box{
+  display:flex;align-items:flex-start;gap:16px;
+  background:var(--warn-bg);border:1.5px solid var(--warn-bd);
+  border-radius:var(--r16);padding:18px 22px;margin-bottom:24px;
+}
+.migrate-box__icon{font-size:26px;flex-shrink:0;line-height:1;margin-top:2px;}
+.migrate-box__body{flex:1;}
+.migrate-box__body h4{
+  font-size:14px;font-weight:800;color:var(--warn);margin-bottom:4px;
+}
+.migrate-box__body p{font-size:13px;color:var(--t300);line-height:1.5;}
+.migrate-box__msg{font-size:13px;font-weight:600;margin-top:8px;margin-bottom:4px;}
+.migrate-btn{
+  margin-top:10px;display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:var(--rf);
+  background:var(--warn);color:#fff;
+  font-size:13px;font-weight:700;border:none;cursor:pointer;
+  transition:opacity .15s;
+}
+.migrate-btn:hover{opacity:.88;}
+.migrate-btn:disabled{opacity:.5;cursor:default;}
+
+/* ── Editor inline: quick-card editable ─────────────────────── */
+.quick-card--editing{border:1.5px dashed var(--g400);background:var(--surface);}
+.quick-card__edit-fields{
+  display:flex;flex-direction:column;gap:6px;flex:1;
+}
+.quick-card__edit-fields input{
+  border:1px solid var(--bd2);border-radius:var(--r8);
+  padding:5px 9px;font-size:13px;font-weight:600;
+  color:var(--t100);background:var(--surface2);
+}
+.quick-card__edit-fields input:focus{outline:none;border-color:var(--g400);}
+
+/* ── Editor inline: exercise row editable (Rutinas) ─────────── */
+.ej-row--editing{background:var(--surface2);border-radius:var(--r8);padding:6px 8px;}
+.ej-row__edit-inputs{display:flex;gap:6px;flex:1;align-items:center;}
+.ej-row__edit-inputs input{
+  border:1px solid var(--bd2);border-radius:var(--r8);
+  padding:5px 8px;font-size:13px;color:var(--t100);
+}
+.ej-row__edit-inputs input:first-child{flex:1;}
+.ej-row__edit-inputs input:last-child{width:70px;}
+.ej-row__edit-inputs input:focus{outline:none;border-color:var(--g400);}
+.ej-row__edit-btn{
+  background:none;border:none;padding:4px 6px;
+  font-size:14px;cursor:pointer;color:var(--t400);
+  border-radius:var(--r8);transition:background .13s;flex-shrink:0;
+}
+.ej-row__edit-btn:hover{background:var(--surface3);}
+.ej-save-group{margin-top:10px;}
+
+/* ── Editor inline: cardio editable ─────────────────────────── */
+.cardio-edit-input{
+  width:100%;border:1px solid var(--bd2);border-radius:var(--r8);
+  padding:7px 10px;font-size:13px;color:var(--t100);
+  background:var(--surface2);margin-bottom:4px;
+  font-family:var(--font);resize:vertical;
+}
+.cardio-edit-input:focus{outline:none;border-color:var(--g400);}
+.cardio-edit-label{
+  font-size:11px;font-weight:700;color:var(--t500);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;
+}
+.cardio-save-btn{
+  margin-top:12px;display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:var(--rf);
+  background:var(--g700);color:#fff;
+  font-size:13px;font-weight:700;border:none;cursor:pointer;
+  transition:opacity .15s;
+}
+.cardio-save-btn:hover{opacity:.88;}
+.cardio-save-btn:disabled{opacity:.5;cursor:default;}
+
+/* ── Editor inline: hero editable (Inicio) ───────────────────── */
+.hero-edit-field{
+  width:100%;border:2px dashed rgba(255,255,255,.5);border-radius:var(--r8);
+  padding:8px 12px;font-size:inherit;color:inherit;
+  background:rgba(255,255,255,.12);font-family:var(--font-display);
+  text-align:center;resize:none;line-height:1.3;
+}
+.hero-edit-field:focus{outline:none;border-color:rgba(255,255,255,.9);}
+
 /* Toast OK */
 .toast-ok{
   background:var(--g100);color:var(--g800);

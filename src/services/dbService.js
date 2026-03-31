@@ -172,6 +172,16 @@ export async function guardarDiaRutina(grupo, diaId, datos) {
   await setDoc(doc(db, 'rutinas', grupo, 'dias', diaId), datos, { merge: true })
 }
 
+// Contenido de páginas (inicio, cardio, etc.)
+export async function obtenerContenidoApp(pagina) {
+  const snap = await getDoc(doc(db, 'contenidoApp', pagina))
+  return snap.exists() ? snap.data() : null
+}
+
+export async function guardarContenidoApp(pagina, datos) {
+  await setDoc(doc(db, 'contenidoApp', pagina), datos, { merge: true })
+}
+
 // Guía educativa
 export async function guardarArticuloGuia(articuloId, datos) {
   if (articuloId) {

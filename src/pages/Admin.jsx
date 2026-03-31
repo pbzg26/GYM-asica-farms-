@@ -966,12 +966,19 @@ export default function Admin() {
 
       {/* Botón migración */}
       <div className="migrate-box">
-        <h4>Inicializar datos en Firestore</h4>
-        <p>Sube los datos estáticos (máquinas, rutinas, guía) a Firestore para poder editarlos desde aquí. Solo necesitas hacerlo una vez.</p>
-        {msgMigrar && <p style={{ color: msgMigrar.startsWith('✓') ? 'var(--neon)' : 'var(--danger)', marginBottom: 8 }}>{msgMigrar}</p>}
-        <button className="migrate-btn" onClick={handleMigrar} disabled={migrando}>
-          {migrando ? 'Migrando...' : '⬆ Inicializar datos'}
-        </button>
+        <div className="migrate-box__icon">⬆️</div>
+        <div className="migrate-box__body">
+          <h4>Inicializar datos en Firestore</h4>
+          <p>Sube los datos base (máquinas, rutinas, guía) a Firestore para poder editarlos desde la app. Solo se necesita hacer una vez.</p>
+          {msgMigrar && (
+            <p className="migrate-box__msg" style={{ color: msgMigrar.startsWith('✓') ? 'var(--g700)' : 'var(--err)' }}>
+              {msgMigrar}
+            </p>
+          )}
+          <button className="migrate-btn" onClick={handleMigrar} disabled={migrando}>
+            {migrando ? '⏳ Migrando...' : '⬆ Inicializar datos'}
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -998,17 +1005,29 @@ export default function Admin() {
       {tabActiva === 'editor'      && esSuperAdmin && (
         <div>
           <div className="page__header">
-            <h3 className="page__title" style={{fontSize:18}}>Editor de Página</h3>
-            <p className="page__sub">Edita directamente el contenido del gym. Ve a la página de Máquinas y activa el Modo Editor para editar ejercicios inline.</p>
+            <h3 className="page__title" style={{fontSize:18}}>Editor de Páginas</h3>
+            <p className="page__sub">Edita el contenido directamente desde cada sección de la app — sin tocar código.</p>
           </div>
           <div style={{display:'flex',flexDirection:'column',gap:16}}>
             <div className="form-card">
-              <h4 style={{fontWeight:800,marginBottom:8}}>✏️ Cómo editar ejercicios</h4>
-              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Ve a la sección <strong>Máquinas</strong> → botón <strong>"✏️ Modo editor"</strong> → haz clic en cualquier máquina para editarla. Desde ahí puedes cambiar nombre, imágenes, descripción, series, y videos de YouTube.</p>
+              <h4 style={{fontWeight:800,marginBottom:8}}>🏠 Inicio</h4>
+              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Ve a <strong>Inicio</strong> → botón <strong>"✏️ Modo editor"</strong> → edita el título del hero, subtítulo y las tarjetas de acceso rápido. Guarda con <strong>💾 Guardar</strong>.</p>
+            </div>
+            <div className="form-card">
+              <h4 style={{fontWeight:800,marginBottom:8}}>🏋️ Máquinas</h4>
+              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Ve a <strong>Máquinas</strong> → <strong>"✏️ Modo editor"</strong> → clic en cualquier máquina para editar nombre, imágenes, descripción, series, músculos y videos de YouTube.</p>
+            </div>
+            <div className="form-card">
+              <h4 style={{fontWeight:800,marginBottom:8}}>📅 Rutinas</h4>
+              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Ve a <strong>Rutinas</strong> → <strong>"✏️ Modo editor"</strong> → selecciona un grupo y día → edita cada ejercicio con ✏️ → guarda con <strong>💾 Guardar [día]</strong>.</p>
+            </div>
+            <div className="form-card">
+              <h4 style={{fontWeight:800,marginBottom:8}}>🏃 Cardio</h4>
+              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Ve a <strong>Cardio</strong> → <strong>"✏️ Modo editor"</strong> → edita títulos de rutas, reglas y el mensaje motivacional. Guarda con <strong>💾 Guardar cambios</strong>.</p>
             </div>
             <div className="form-card">
               <h4 style={{fontWeight:800,marginBottom:8}}>📸 URLs de imágenes</h4>
-              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Usa URLs de Unsplash para las fotos de ejercicios.</p>
+              <p style={{fontSize:13,color:'var(--t500)',lineHeight:1.5}}>Para fotos de ejercicios usa URLs de Unsplash.</p>
               <p style={{fontSize:12,color:'var(--t600)',marginTop:8,fontFamily:'monospace'}}>https://images.unsplash.com/photo-ID?w=600&q=75&auto=format</p>
             </div>
           </div>

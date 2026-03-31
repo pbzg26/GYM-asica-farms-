@@ -14,8 +14,13 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async (user) => {
       setUsuario(user)
       if (user) {
-        const p = await obtenerPerfil(user.uid)
-        setPerfil(p)
+        try {
+          const p = await obtenerPerfil(user.uid)
+          setPerfil(p)
+        } catch (err) {
+          console.error('Error cargando perfil:', err)
+          setPerfil(null)
+        }
       } else {
         setPerfil(null)
       }
